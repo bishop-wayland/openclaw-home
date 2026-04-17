@@ -35,14 +35,14 @@
   "gateway": {
     "mode": "local",
     "port": 18789,
-    "bind": "lan",
+    "bind": "loopback",
     "tailscale": {
       "mode": "off",
       "resetOnExit": false
     },
     "auth": {
       "mode": "token",
-      "token": "72e74cb93498a0758bb3cc341491633b1cf92452581b1639",
+      "token": "8aca42d3ce213f355d96cf47216ea6765f04993ea6a88ce3",
       "rateLimit": {
         "maxAttempts": 10,
         "windowMs": 60000,
@@ -117,14 +117,14 @@
     }
   },
   "wizard": {
-    "lastRunAt": "2026-04-03T00:55:24.312Z",
-    "lastRunVersion": "2026.4.1",
+    "lastRunAt": "2026-04-17T06:30:50.791Z",
+    "lastRunVersion": "2026.4.12",
     "lastRunCommand": "onboard",
     "lastRunMode": "local"
   },
   "meta": {
-    "lastTouchedVersion": "2026.4.11",
-    "lastTouchedAt": "2026-04-12T01:41:38.149Z"
+    "lastTouchedVersion": "2026.4.12",
+    "lastTouchedAt": "2026-04-17T06:30:50.826Z"
   },
   "hooks": {
     "enabled": true,
@@ -178,7 +178,9 @@
     "enabled": true,
     "backend": "acpx",
     "defaultAgent": "claude",
-    "allowedAgents": ["claude"],
+    "allowedAgents": [
+      "claude"
+    ],
     "maxConcurrentSessions": 4,
     "stream": {
       "coalesceIdleMs": 300,
@@ -200,6 +202,11 @@
           "nonInteractivePermissions": "deny"
         }
       }
+    }
+  },
+  "skills": {
+    "install": {
+      "nodeManager": "npm"
     }
   }
 }
