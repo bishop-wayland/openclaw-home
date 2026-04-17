@@ -15,9 +15,9 @@ memory/
 update-check.json
 exec-approvals.json
 
-# Session conversation logs
-agents/main/sessions/
-agents/main/agent/auth-*.json
+# Session conversation logs and agent runtime state (all agents)
+agents/
+
 
 # SQLite runtime databases
 flows/
