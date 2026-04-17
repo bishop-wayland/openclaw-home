@@ -31,6 +31,10 @@ identity/
 # Workspace runtime state
 workspace/.openclaw/
 
+# ACP agent sub-workspaces (managed by their own sessions)
+workspace/claude/
+workspace/codex/
+
 # Claude Code internal
 .claude/
 

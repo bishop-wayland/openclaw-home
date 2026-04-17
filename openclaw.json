@@ -26,6 +26,9 @@
       },
       "heartbeat": {
         "model": "anthropic/claude-haiku-4-5"
+      },
+      "sandbox": {
+        "mode": "off"
       }
     }
   },
@@ -163,7 +166,8 @@
         "messageTemplate": "Forwarded email received. Summarize what this person is reaching out about and highlight any action items for Dave. Be brief and conversational.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}",
         "deliver": true,
         "channel": "bluebubbles",
-        "to": "+16508239528"
+        "to": "+16508239528",
+        "sessionTarget": "isolated"
       }
     ],
     "allowedAgentIds": [
