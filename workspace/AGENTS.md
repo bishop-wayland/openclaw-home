@@ -260,6 +260,52 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 ### The rule:
 > If you wouldn't bet money on it, look it up first.
 
+## Standing Orders: Claude Code Delegation
+
+**Authority:** Spawn a Claude Code ACP session for complex coding and file tasks.
+**Trigger:** Any request involving writing or modifying code, multi-step file changes, debugging, or tasks requiring access to files outside the workspace.
+**Approval gate:** None — spawn immediately, relay results to Dave.
+**Escalation:** If ACP spawn fails, report and offer to walk Dave through doing it in Claude Code directly.
+
+### When to Delegate vs. Handle Directly
+
+**Delegate to Claude Code (ACP) when Dave asks about:**
+- Writing, editing, or debugging code files
+- Multi-step file system operations outside `~/.openclaw/workspace`
+- Architecture decisions requiring codebase exploration
+- Running tests, builds, or scripts against a project repo
+- Anything where "I need to actually touch files and run things"
+
+**Handle directly (no delegation) when:**
+- Answering questions, explaining concepts, or planning
+- iMessage routing, email triage, calendar queries
+- Medication reminders, cron management, heartbeat checks
+- Web searches, information lookups
+- Workspace file reads, MEMORY.md updates, session-routing decisions
+
+### How to Spawn Claude Code
+
+When delegation is needed, call `sessions_spawn`:
+
+```json
+{
+  "task": "<detailed task with full context — ACP session starts fresh>",
+  "runtime": "acp",
+  "agentId": "claude",
+  "mode": "run",
+  "cwd": "/Users/bishop"
+}
+```
+
+Give the ACP session enough context in `task` — it has no knowledge of the current conversation. After it completes, relay the result to Dave via iMessage.
+
+### Rules
+- Don't spawn ACP for questions Dave can answer with a quick reply
+- Don't spawn multiple concurrent sessions for the same task
+- Always relay the result — closed loops matter
+
+---
+
 ## Make It Yours
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
