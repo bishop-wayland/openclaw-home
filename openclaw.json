@@ -81,6 +81,16 @@
       "enabled": false
     }
   },
+  "secrets": {
+    "providers": {
+      "onepassword": {
+        "source": "exec",
+        "command": "/Users/bishop/.openclaw/scripts/op-anthropic-key.sh",
+        "args": [],
+        "passEnv": ["HOME", "OP_SERVICE_ACCOUNT_TOKEN"]
+      }
+    }
+  },
   "auth": {
     "profiles": {
       "anthropic:default": {
