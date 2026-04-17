@@ -1,0 +1,181 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "/Users/bishop/.openclaw/workspace",
+      "models": {
+        "anthropic/claude-sonnet-4-6": {},
+        "anthropic/claude-haiku-4-5": {}
+      },
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-6"
+      },
+      "compaction": {
+        "memoryFlush": {
+          "enabled": true
+        },
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "memorySearch": {
+        "experimental": {
+          "sessionMemory": true
+        },
+        "sources": [
+          "memory",
+          "sessions"
+        ]
+      },
+      "heartbeat": {
+        "model": "anthropic/claude-haiku-4-5"
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "port": 18789,
+    "bind": "lan",
+    "tailscale": {
+      "mode": "off",
+      "resetOnExit": false
+    },
+    "auth": {
+      "mode": "token",
+      "token": "72e74cb93498a0758bb3cc341491633b1cf92452581b1639",
+      "rateLimit": {
+        "maxAttempts": 10,
+        "windowMs": 60000,
+        "lockoutMs": 300000
+      }
+    },
+    "controlUi": {
+      "allowInsecureAuth": true,
+      "allowedOrigins": [
+        "http://localhost:18789",
+        "http://127.0.0.1:18789"
+      ]
+    },
+    "nodes": {
+      "denyCommands": [
+        "canvas.present",
+        "canvas.eval",
+        "canvas.snapshot"
+      ]
+    }
+  },
+  "session": {
+    "dmScope": "per-channel-peer",
+    "reset": {
+      "mode": "daily",
+      "atHour": 4,
+      "idleMinutes": 60
+    }
+  },
+  "tools": {
+    "profile": "coding",
+    "fs": {
+      "workspaceOnly": true
+    },
+    "elevated": {
+      "enabled": false
+    }
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "api_key"
+      }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": false,
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      },
+      "tokenFile": "/Users/bishop/.openclaw/credentials/telegram-token.txt"
+    },
+    "whatsapp": {
+      "enabled": false,
+      "dmPolicy": "pairing",
+      "groups": {
+        "*": {
+          "requireMention": true
+        }
+      }
+    },
+    "bluebubbles": {
+      "enabled": true,
+      "serverUrl": "http://localhost:1234",
+      "password": "get away from her you bitch",
+      "webhookPath": "/bluebubbles-webhook",
+      "sendReadReceipts": true
+    }
+  },
+  "wizard": {
+    "lastRunAt": "2026-04-03T00:55:24.312Z",
+    "lastRunVersion": "2026.4.1",
+    "lastRunCommand": "onboard",
+    "lastRunMode": "local"
+  },
+  "meta": {
+    "lastTouchedVersion": "2026.4.11",
+    "lastTouchedAt": "2026-04-12T01:41:38.149Z"
+  },
+  "hooks": {
+    "enabled": true,
+    "token": "90cdac2aeb647c197630dda2cbcdcdae05fbda6aca2415dc41dd0b5c9193f179",
+    "path": "/hooks",
+    "presets": [
+      "gmail"
+    ],
+    "gmail": {
+      "account": "bishopunit937@gmail.com",
+      "label": "INBOX",
+      "topic": "projects/big-signifier-492503-a5/topics/gog-gmail-watch",
+      "subscription": "gog-gmail-watch-push",
+      "pushToken": "6e6f7dcd9048775a63b43243d2d2a7994aab536bb7283e47",
+      "hookUrl": "http://127.0.0.1:18789/hooks/gmail",
+      "includeBody": true,
+      "maxBytes": 20000,
+      "renewEveryMinutes": 720,
+      "serve": {
+        "bind": "127.0.0.1",
+        "port": 8788,
+        "path": "/"
+      },
+      "tailscale": {
+        "mode": "funnel",
+        "path": "/gmail-pubsub"
+      },
+      "model": "anthropic/claude-haiku-4-5"
+    },
+    "mappings": [
+      {
+        "match": {
+          "path": "gmail"
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Gmail",
+        "sessionKey": "hook:gmail:{{messages[0].id}}",
+        "messageTemplate": "Forwarded email received. Summarize what this person is reaching out about and highlight any action items for Dave. Be brief and conversational.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}",
+        "deliver": true,
+        "channel": "bluebubbles",
+        "to": "+16508239528"
+      }
+    ],
+    "allowedAgentIds": [
+      "main"
+    ],
+    "defaultSessionKey": "hook:ingress"
+  },
+  "plugins": {
+    "entries": {
+      "anthropic": {
+        "enabled": true
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+# Credentials — never commit these
+credentials/
+
+# Runtime state — noisy, not useful to version
+logs/
+cron/
+tasks/
+delivery-queue/
+devices/
+canvas/
+qqbot/
+telegram/
+media/
+memory/
+update-check.json
+exec-approvals.json
+
+# Session conversation logs
+agents/main/sessions/
+agents/main/agent/auth-*.json
+
+# SQLite runtime databases
+flows/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Identity/auth
+identity/
+
+# Workspace runtime state
+workspace/.openclaw/
+
+# Claude Code internal
+.claude/
+
+# Old backup files — git replaces these
+*.bak
+*.bak.*
+*.bak[0-9]
+*.clobbered.*
+openclawbackup.json
+
+# Temp files in workspace
+workspace/tmp-*
+workspace/state/
