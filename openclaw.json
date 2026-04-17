@@ -89,6 +89,9 @@
         "args": [],
         "passEnv": ["HOME", "OP_SERVICE_ACCOUNT_TOKEN"]
       }
+    },
+    "defaults": {
+      "exec": "onepassword"
     }
   },
   "auth": {
