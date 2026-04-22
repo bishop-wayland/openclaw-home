@@ -171,24 +171,29 @@ Default heartbeat prompt:
 
 You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it small to limit token burn.
 
-### Heartbeat vs Cron: When to Use Each
+### Routing Architecture
 
-**Use heartbeat when:**
+Everything routes through you — the main session. You are the single delivery path to Dave. Never create isolated sessions that deliver directly to Dave, as this splits context and creates fragile parallel delivery paths.
 
-- Multiple checks can batch together (inbox + calendar + notifications in one turn)
-- You need conversational context from recent messages
-- Timing can drift slightly (every ~30 min is fine, not exact)
-- You want to reduce API calls by combining periodic checks
+**When you receive a message, decide:**
 
-**Use cron when:**
+1. **Answer directly** — conversational, quick, needs your context
+2. **Route to Haiku** — lightweight, self-contained (reminders, simple lookups, short drafts). Spawn a Haiku sub-session, get the response, relay it to Dave yourself.
+3. **Delegate to Claude Code (ACP)** — anything touching files, code, or multi-step execution
 
-- Exact timing matters ("9:00 AM sharp every Monday")
-- Task needs isolation from main session history
-- You want a different model or thinking level for the task
+**Cron signals** arrive as messages prefixed with `[CRON: job-name]`. Treat them as scheduled tasks:
+- Follow the routing instructions in the message payload
+- Log what you did to `memory/YYYY-MM-DD.md`
+- Deliver the result to Dave via iMessage yourself
+
+**Heartbeat signals** arrive as the configured heartbeat prompt. Follow `HEARTBEAT.md` strictly. Route checks to Haiku if lightweight, handle yourself if context is needed.
+
+**Use cron (via `openclaw cron add`) when:**
+- Exact timing matters ("9:00 AM sharp")
 - One-shot reminders ("remind me in 20 minutes")
-- Output should deliver directly to a channel without main session involvement
+- Always set `sessionTarget: "main"` — never isolated
 
-**Tip:** Batch similar periodic checks into `HEARTBEAT.md` instead of creating multiple cron jobs. Use cron for precise schedules and standalone tasks.
+**Tip:** Batch similar periodic checks into `HEARTBEAT.md` instead of creating multiple cron jobs.
 
 **Things to check (rotate through these, 2-4 times per day):**
 
