@@ -2,8 +2,10 @@
 credentials/
 
 # Runtime state — noisy, not useful to version
+# Note: cron/jobs.json IS versioned (it's config). cron/jobs-state.json and cron/runs/ are runtime.
 logs/
-cron/
+cron/jobs-state.json
+cron/runs/
 tasks/
 delivery-queue/
 devices/
@@ -43,7 +45,12 @@ workspace/codex/
 *.bak.*
 *.bak[0-9]
 *.clobbered.*
+*.pre-refactor.*
+*.last-good
 openclawbackup.json
+
+# Secrets — never commit
+.env
 
 # Temp files in workspace
 workspace/tmp-*

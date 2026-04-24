@@ -25,8 +25,10 @@
         ]
       },
       "heartbeat": {
-        "model": "anthropic/claude-haiku-4-5"
+        "model": "anthropic/claude-haiku-4-5",
+        "isolatedSession": true
       },
+      "typingMode": "never",
       "sandbox": {
         "mode": "off"
       }
@@ -65,7 +67,7 @@
     }
   },
   "session": {
-    "dmScope": "per-channel-peer",
+    "dmScope": "main",
     "reset": {
       "mode": "daily",
       "atHour": 4,
@@ -126,7 +128,7 @@
       "serverUrl": "http://localhost:1234",
       "password": "get away from her you bitch",
       "webhookPath": "/bluebubbles-webhook",
-      "sendReadReceipts": true
+      "sendReadReceipts": false
     }
   },
   "wizard": {
@@ -176,16 +178,19 @@
         "wakeMode": "now",
         "name": "Gmail",
         "sessionKey": "hook:gmail:{{messages[0].id}}",
-        "messageTemplate": "Forwarded email received. Summarize what this person is reaching out about and highlight any action items for Dave. Be brief and conversational.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}",
-        "deliver": true,
-        "channel": "bluebubbles",
-        "to": "+16508239528"
+        "model": "anthropic/claude-haiku-4-5",
+        "messageTemplate": "New email — triage only. Never deliver anything to Dave directly. Never reply to the sender.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}\n\nDecide one of three actions:\n\nURGENT — time-sensitive and from a real person; Dave likely needs to know within hours.\n  → Call sessions_send with sessionKey=\"main\" and a short note like: \"Email from [sender]: [1-sentence summary]. Subject: [subject].\" Do NOT include the body.\n\nNON_URGENT — informational, automated, newsletter, promotional, or low-priority.\n  → Append one line to memory/inbox-queue.md in this format:\n    \"- From: [sender] | Subject: [subject] | Summary: [1-sentence summary]\"\n  Create the file if it doesn't exist.\n\nSPAM — obvious junk, phishing, or marketing filler.\n  → Do nothing. Discard silently.\n\nAfter acting, output one word: URGENT, NON_URGENT, or SPAM.",
+        "deliver": false
       }
     ],
     "allowedAgentIds": [
       "main"
     ],
-    "defaultSessionKey": "hook:ingress"
+    "defaultSessionKey": "hook:ingress",
+    "allowedSessionKeyPrefixes": [
+      "hook:"
+    ],
+    "allowRequestSessionKey": true
   },
   "acp": {
     "enabled": true,

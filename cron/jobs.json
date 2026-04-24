@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "f7d6780a-79d4-43ea-983e-45198fa68f58",
+      "name": "medication-noon",
+      "enabled": true,
+      "createdAtMs": 1776145606608,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 12 * * *",
+        "tz": "America/Los_Angeles"
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "[CRON: medication-noon] Noon medication reminder for Dave. Send a brief, warm reminder with a small quip. Log to daily memory when done."
+      },
+      "failureAlert": {
+        "after": 1,
+        "channel": "bluebubbles",
+        "to": "+16508239528",
+        "cooldownMs": 3600000
+      },
+      "state": {}
+    },
+    {
+      "id": "ffa870ad-88ea-4847-a6b1-e3fc3dae642e",
+      "name": "winddown-9pm",
+      "enabled": true,
+      "createdAtMs": 1776145629965,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 21 * * *",
+        "tz": "America/Los_Angeles"
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "[CRON: winddown-9pm] Evening wind-down check-in for Dave. Ask what his plan is for the night. Goal: book by 10 PM, lights out by 10:45 PM. Be warm but direct. Log to daily memory when done."
+      },
+      "failureAlert": {
+        "after": 1,
+        "channel": "bluebubbles",
+        "to": "+16508239528",
+        "cooldownMs": 3600000
+      },
+      "state": {}
+    },
+    {
+      "id": "8850f8d3-c009-4260-b91f-6f41a4849c2a",
+      "name": "medication-3pm",
+      "enabled": true,
+      "createdAtMs": 1776402658437,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 15 * * *",
+        "tz": "America/Los_Angeles"
+      },
+      "sessionTarget": "main",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "[CRON: medication-3pm] 3pm medication reminder for Dave. Send a brief, warm reminder with a small quip. Log to daily memory when done."
+      },
+      "failureAlert": {
+        "after": 1,
+        "channel": "bluebubbles",
+        "to": "+16508239528",
+        "cooldownMs": 3600000
+      },
+      "state": {}
+    }
+  ]
+}
