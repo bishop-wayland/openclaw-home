@@ -109,6 +109,22 @@ Active to-do list for expanding Bishop's capabilities. Track progress here.
 - [x] Compaction + memory flush + session memory enabled
 - [x] Cron jobs: noon meds, 3pm meds, 9pm wind-down
 
+## 1Password Auth Pattern (as of 2026-04-17)
+
+- **Service account name:** BishopServiceAccount (the old one was deleted; don't search for it)
+- **Token location:** `/Users/bishop/.openclaw/.env` — key is `OP_SERVICE_ACCOUNT_TOKEN`
+- **CLI binary:** `/opt/homebrew/Caskroom/1password-cli/2.33.1/op`
+- **Auth pattern:** Source token from `.env`, then use `op read` to fetch secrets
+- **Reference script:** `/Users/bishop/.openclaw/scripts/ynab-test.sh` — use this as the template for all YNAB and 1Password work
+- **YNAB token path in 1Password:** `op://Bishop/YnabApiKey/credential`
+- **YNAB budget IDs:** David's Budget = `2f6bc004-22ff-4e29-be77-a8907cb1c537`, Kid's Budget also exists
+- **Do NOT** use `op item get` with `--vault`-less service account calls — always use `op read` with the full `op://` path
+
+## Known Issues (as of 2026-05-01)
+
+- **iMessage via BlueBubbles fixed (2026-04-30 at 12:17 PM)**: Broke on 2026-04-29; Telegram fallback worked; BlueBubbles resolved itself and now functional.
+- **CRITICAL: Custody swap decision needed (2026-05-01)**: Lara emailed about a custody swap for July — wants July 4-10 for Dave, July 11-17 for her. Email is 7+ days old. Urgent alert successfully delivered to Dave via BlueBubbles at 2026-04-30 1:28 PM. Dave needs to respond to Lara ASAP so she can book flights.
+
 ## Setup State (as of 2026-04-05)
 
 - OpenClaw running on VM: bishop@192.168.64.2

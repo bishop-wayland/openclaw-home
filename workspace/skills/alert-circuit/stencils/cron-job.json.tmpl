@@ -1,0 +1,33 @@
+{
+  "id": "<UUID — generate via uuidgen>",
+  "name": "<circuit-name>",
+  "enabled": true,
+  "createdAtMs": <epoch millis at creation>,
+  "schedule": {
+    "kind": "cron",
+    "expr": "<cron expression e.g. '0 12 * * *'>",
+    "tz": "America/Los_Angeles"
+  },
+  "sessionTarget": "isolated",
+  "wakeMode": "now",
+  "payload": {
+    "kind": "agentTurn",
+    "message": "<short prompt: what should the agent reply with verbatim>\n\nDo not call any tools. Your reply is delivered verbatim to Dave's iMessage by the cron worker. No preamble, no explanation. Just the message.",
+    "model": "anthropic/claude-haiku-4-5",
+    "timeoutSeconds": 60,
+    "lightContext": true
+  },
+  "delivery": {
+    "mode": "announce",
+    "channel": "bluebubbles",
+    "to": "+16508239528",
+    "bestEffort": true
+  },
+  "failureAlert": {
+    "after": 1,
+    "channel": "bluebubbles",
+    "to": "+16508239528",
+    "cooldownMs": 3600000
+  },
+  "state": {}
+}

@@ -16,6 +16,10 @@ media/
 memory/
 update-check.json
 exec-approvals.json
+bluebubbles/
+plugin-runtime-deps/
+plugins/
+subagents/
 
 # Session conversation logs and agent runtime state (all agents)
 agents/
@@ -46,6 +50,7 @@ workspace/codex/
 *.bak[0-9]
 *.clobbered.*
 *.pre-refactor.*
+*.pre-2026-*-fix
 *.last-good
 openclawbackup.json
 

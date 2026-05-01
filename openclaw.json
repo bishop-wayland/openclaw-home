@@ -81,6 +81,14 @@
     },
     "elevated": {
       "enabled": false
+    },
+    "sessions": {
+      "visibility": "all"
+    },
+    "web": {
+      "search": {
+        "provider": "ollama"
+      }
     }
   },
   "secrets": {
@@ -89,7 +97,10 @@
         "source": "exec",
         "command": "/Users/bishop/.openclaw/scripts/op-anthropic-key.sh",
         "args": [],
-        "passEnv": ["HOME", "OP_SERVICE_ACCOUNT_TOKEN"]
+        "passEnv": [
+          "HOME",
+          "OP_SERVICE_ACCOUNT_TOKEN"
+        ]
       }
     },
     "defaults": {
@@ -172,6 +183,21 @@
     "mappings": [
       {
         "match": {
+          "path": "gmail-alert-refurb"
+        },
+        "action": "agent",
+        "wakeMode": "now",
+        "name": "Refurb Mac mini alert",
+        "sessionKey": "hook:refurb-alert:{{messages[0].id}}",
+        "model": "anthropic/claude-haiku-4-5",
+        "messageTemplate": "[refurb-alert handled by transform \u2014 agent should not see this]",
+        "deliver": false,
+        "transform": {
+          "module": "refurb-alert.v3.js"
+        }
+      },
+      {
+        "match": {
           "path": "gmail"
         },
         "action": "agent",
@@ -179,7 +205,7 @@
         "name": "Gmail",
         "sessionKey": "hook:gmail:{{messages[0].id}}",
         "model": "anthropic/claude-haiku-4-5",
-        "messageTemplate": "New email — triage only. Never deliver anything to Dave directly. Never reply to the sender.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}\n\nDecide one of three actions:\n\nURGENT — time-sensitive and from a real person; Dave likely needs to know within hours.\n  → Call sessions_send with sessionKey=\"main\" and a short note like: \"Email from [sender]: [1-sentence summary]. Subject: [subject].\" Do NOT include the body.\n\nNON_URGENT — informational, automated, newsletter, promotional, or low-priority.\n  → Append one line to memory/inbox-queue.md in this format:\n    \"- From: [sender] | Subject: [subject] | Summary: [1-sentence summary]\"\n  Create the file if it doesn't exist.\n\nSPAM — obvious junk, phishing, or marketing filler.\n  → Do nothing. Discard silently.\n\nAfter acting, output one word: URGENT, NON_URGENT, or SPAM.",
+        "messageTemplate": "New email \u2014 triage only. Never deliver anything to Dave directly. Never reply to the sender.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}\n\nAppend exactly one line to /Users/bishop/.openclaw/workspace/memory/inbox-queue.md in this format:\n  - From: <original sender or outer From> | Subject: <subject> | Summary: <1-sentence summary>\nCreate the file if missing. Then output one word: QUEUED.\n\nRefurb-tracker emails are handled by a dedicated short-circuit at /hooks/gmail-alert-refurb \u2014 they do not arrive here. If you see one here by mistake, queue it as above and note 'misrouted' in the summary.",
         "deliver": false
       }
     ],
@@ -190,7 +216,8 @@
     "allowedSessionKeyPrefixes": [
       "hook:"
     ],
-    "allowRequestSessionKey": true
+    "allowRequestSessionKey": true,
+    "transformsDir": "/Users/bishop/.openclaw/hooks/transforms"
   },
   "acp": {
     "enabled": true,

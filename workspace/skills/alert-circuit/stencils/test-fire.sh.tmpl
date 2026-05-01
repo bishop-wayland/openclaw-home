@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Test-fire the <CIRCUIT_NAME> alert circuit deliberately.
+# Run three consecutive times and confirm an iMessage arrives each time before declaring stable.
+#
+# Usage: scripts/test-<circuit-name>.sh
+
+set -euo pipefail
+
+# === FOR CRON CIRCUITS ===
+# Replace <JOB_ID> with the cron job's UUID from cron/jobs.json:
+#   openclaw cron run <JOB_ID>
+
+# === FOR HOOK CIRCUITS ===
+GATEWAY_HOST="http://127.0.0.1:18789"
+HOOK_PATH="/hooks/<webhook-path-segment>"
+HOOK_TOKEN=$(python3 -c 'import json;print(json.load(open("/Users/bishop/.openclaw/openclaw.json"))["hooks"]["token"])')
+
+MSG_ID="test-$(date +%s)"
+
+# Synthetic payload — match the shape the upstream filter would produce.
+PAYLOAD=$(python3 -c "
+import json
+print(json.dumps({
+  'messages': [{
+    'id': '$MSG_ID',
+    'from': '<sample sender — e.g. \"Sender Name <sender@example.com>\">',
+    'subject': '<sample subject>',
+    'body': '<sample body, including any forwarded-from blocks if relevant>',
+    'snippet': '<sample short summary>'
+  }]
+}))
+")
+
+echo "→ firing hook: $HOOK_PATH msg_id=$MSG_ID"
+
+curl -sS -X POST "${GATEWAY_HOST}${HOOK_PATH}" \
+  -H "Content-Type: application/json" \
+  -H "x-openclaw-token: ${HOOK_TOKEN}" \
+  -d "$PAYLOAD" \
+  | python3 -m json.tool 2>/dev/null || true
+
+echo ""
+echo "→ done. Wait ~10 seconds for the agent to run, then trace with:"
+echo "  scripts/trace-<circuit-name>.sh $MSG_ID"
+echo ""
+echo "→ Pass criteria: iMessage arrives on Dave's phone with the expected text."
+echo "→ Three clean consecutive fires before declaring the circuit stable."

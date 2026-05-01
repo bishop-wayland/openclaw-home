@@ -1,0 +1,14 @@
+{
+  "match": {
+    "path": "<webhook-path-segment, e.g. 'gmail-alert-refurb' for /hooks/gmail-alert-refurb>"
+  },
+  "action": "agent",
+  "wakeMode": "now",
+  "name": "<circuit-display-name>",
+  "sessionKey": "hook:<circuit-name>:{{messages[0].id}}",
+  "model": "anthropic/claude-haiku-4-5",
+  "messageTemplate": "<TEMPLATE TEXT — pure data, no agent instructions. Use field substitutions like {{messages[0].subject}}, {{messages[0].from}}, {{messages[0].body}}. Example: \"🚨 Mac mini alert: {{messages[0].subject}} → https://www.apple.com/shop/refurbished/mac/mac-mini\">",
+  "deliver": true,
+  "channel": "bluebubbles",
+  "to": "+16508239528"
+}

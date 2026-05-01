@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Forensic trace for the <CIRCUIT_NAME> alert circuit.
+# Pulls per-hop log entries: trigger received → agent dispatched → agent decision → channel deliver.
+#
+# Usage: scripts/trace-<circuit-name>.sh [<msg_id_or_run_id>]
+#   With identifier: trace that specific run.
+#   Without: trace the most recent run for this circuit.
+
+set -euo pipefail
+RUN_ID="${1:-}"
+
+GATEWAY_LOG=/Users/bishop/.openclaw/logs/gateway.log
+SESSIONS_DIR=/Users/bishop/.openclaw/agents/main/sessions
+INBOX_QUEUE=/Users/bishop/.openclaw/workspace/memory/inbox-queue.md
+
+CIRCUIT_NAME="<circuit-name>"
+
+echo "════════ HOP 1: trigger received ════════"
+if [ -n "$RUN_ID" ]; then
+  grep -F "$RUN_ID" "$GATEWAY_LOG" | tail -10 || echo "(no entries for $RUN_ID)"
+else
+  grep -E "<webhook-path or cron job id>|hook:$CIRCUIT_NAME" "$GATEWAY_LOG" | tail -5
+fi
+
+echo ""
+echo "════════ HOP 2: agent dispatched ════════"
+grep -E "hook.dispatch|cron.*run" "$GATEWAY_LOG" | tail -5 || true
+
+echo ""
+echo "════════ HOP 3: agent decision (which branch + tool calls) ════════"
+LATEST_SESSION=$(ls -t $SESSIONS_DIR/*.jsonl 2>/dev/null | xargs grep -l "$CIRCUIT_NAME" 2>/dev/null | head -1 || true)
+if [ -n "$LATEST_SESSION" ]; then
+  echo "session: $LATEST_SESSION"
+  grep -oE '"role":"assistant"[^}]*"text":"[^"]*"|"name":"[a-z_]+","arguments"' "$LATEST_SESSION" | head -10
+else
+  echo "(no recent session found for $CIRCUIT_NAME)"
+fi
+
+echo ""
+echo "════════ HOP 4: channel delivery (chat.send) ════════"
+grep -E "chat\.send|bluebubbles.*send" "$GATEWAY_LOG" | tail -5 || true
+
+echo ""
+echo "════════ summary ════════"
+echo "PASS: HOP 3 shows the expected reply text (no extra narration) AND HOP 4 shows a chat.send."
+echo "FAIL on HOP 3: agent narrated instead of just emitting the alert. Check messageTemplate (no agent instructions allowed)."
+echo "FAIL on HOP 4: agent reply was generated but not delivered. Check for tool calls in HOP 3 — they suppress fallback delivery."
