@@ -37,11 +37,17 @@ else
 fi
 
 echo ""
-echo "════════ HOP 4: channel delivery (chat.send) ════════"
-grep -E "chat\.send|bluebubbles.*send" "$GATEWAY_LOG" | tail -5 || true
+echo "════════ HOP 4: channel delivery ════════"
+# For TRANSFORM circuits: transforms log to gateway.log (NOT gateway.err.log).
+# Look for the transform's own tagged log lines:
+grep -E "<circuit-name>-transform" "$GATEWAY_LOG" | tail -5 || \
+  grep -E "chat\.send|bluebubbles.*send" "$GATEWAY_LOG" | tail -5 || \
+  echo "(no delivery log entries found)"
 
 echo ""
 echo "════════ summary ════════"
-echo "PASS: HOP 3 shows the expected reply text (no extra narration) AND HOP 4 shows a chat.send."
-echo "FAIL on HOP 3: agent narrated instead of just emitting the alert. Check messageTemplate (no agent instructions allowed)."
-echo "FAIL on HOP 4: agent reply was generated but not delivered. Check for tool calls in HOP 3 — they suppress fallback delivery."
+echo "PASS — TRANSFORM circuits: HOP 4 shows POST + body + 'response status=200' + 'delivered tempGuid=...'"
+echo "PASS — AGENT circuits:     HOP 3 shows reply text only (no narration, no tool calls) AND HOP 4 shows a chat.send."
+echo "FAIL on HOP 3: agent narrated or called tools. messageTemplate must be pure data; cron prompts must say 'Do not call any tools.'"
+echo "FAIL on HOP 4: BB returned 500 → identity collision (use email-keyed chatGuid in transforms);"
+echo "                empty → transform module not loading (check hooks.transformsDir + module path)."

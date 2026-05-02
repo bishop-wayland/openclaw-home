@@ -20,24 +20,18 @@ echo "════════ HOP 2: hook dispatched ════════"
 grep -E "gmail-alert-refurb|Refurb Mac mini" "$GATEWAY_LOG" | tail -5 || true
 
 echo ""
-echo "════════ HOP 3: agent reply (should be the alert text) ════════"
-LATEST_SESSION=$(ls -t $SESSIONS_DIR/*.jsonl 2>/dev/null | xargs grep -l "refurb-alert" 2>/dev/null | head -1 || true)
-if [ -n "$LATEST_SESSION" ]; then
-  echo "session: $LATEST_SESSION"
-  grep -oE '"role":"assistant"[^}]*"text":"[^"]*"' "$LATEST_SESSION" | tail -3
-  echo ""
-  echo "tool calls (should be ZERO for clean delivery):"
-  grep -oE '"name":"[a-z_]+","arguments"' "$LATEST_SESSION" | tail -5 || echo "(none)"
-else
-  echo "(no recent session found for refurb-alert)"
-fi
+echo "════════ HOP 3: transform invoked + BB call ════════"
+# Transforms log via console.log to gateway.log (NOT gateway.err.log).
+# Look for the transform's tagged log lines in the most recent fire.
+grep "refurb-alert-transform" "$GATEWAY_LOG" | tail -8 || echo "(no transform log entries — transform may not have fired)"
 
 echo ""
-echo "════════ HOP 4: BlueBubbles delivery ════════"
-grep -E "chat\.send" "$GATEWAY_LOG" | tail -3 || true
+echo "════════ HOP 4: BB response status ════════"
+grep "refurb-alert-transform.*status=" "$GATEWAY_LOG" | tail -3 || true
 
 echo ""
 echo "════════ summary ════════"
-echo "PASS: HOP 3 shows ONLY the alert text (no narration, zero tool calls) AND HOP 4 shows a chat.send."
-echo "If agent narrated or called tools: messageTemplate is being read as instructions — verify it's pure data."
-echo "If chat.send missing: tool call suppression. Check for any tool calls in HOP 3."
+echo "PASS: HOP 3 shows POST + body + response status=200 + 'delivered tempGuid=...'"
+echo "FAIL: BB returned 500 → likely identity collision on phone-keyed thread (resolved by"
+echo "      using email-keyed chatGuid, which the transform does)."
+echo "FAIL: HOP 3 empty → transform not loading (check hooks.transformsDir + module exists)."

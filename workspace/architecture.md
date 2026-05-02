@@ -563,6 +563,32 @@ Three options were considered:
 - ✅ Skill packaging: `alert-circuit/EXAMPLES.md` Example 1, `SKILL.md` invariants 1-8, stencils updated
 - ✅ Per-hop logging: `scripts/trace-cron.sh` now formats hop-by-hop (cron fired → agent dispatched → agent reply → BB delivery attempted → BB result → outcome interpretation), with a gateway.err.log peek scoped to the run window. Forensically debuggable in <60 sec without reading raw JSON.
 
+### Bishop-uses-the-skill validation (Test A and Test B)
+
+After Feature 1 was structurally complete, Dave asked the natural next question: does Bishop actually *follow* the alert-circuit skill when asked to create a new alert? Two synthetic tests run via `openclaw agent -m "..." --to +16508239528 --json` (no real iMessage delivery to Dave; Bishop's reply lands as command output).
+
+**Test A — cron flavor.** Prompt: *"Bishop, set up a daily 4:00 PM reminder that texts me 'step away from the screen for 5 minutes.' Call it `screen-break-4pm`."*
+
+First attempt: **Bishop ignored the skill.** From his trajectory at `agents/main/sessions/eeb7d165-…jsonl`: he thought *"Dave wants a daily 4 PM Pacific reminder via iMessage. I'll set up a cron job for this,"* then immediately called `cron(add, ...)` with a minimal config — no read of `SKILL.md` or `EXAMPLES.md`. Result was missing `bestEffort: true`, no `failureAlert`, no `timeoutSeconds`/`lightContext`, no test script, AND a payload prompt that said *"Send Dave an iMessage saying: …"* — phrasing that would trip `hasOutboundSideEffects` and suppress delivery on the natural fire.
+
+Root cause: a stale line in `AGENTS.md` ("**Always `sessionTarget: "main"` — never isolated**") that directly contradicted the alert-circuit skill (which requires `isolated`). When AGENTS.md and a skill conflict, Bishop apparently picks his own path. Fix: replaced that line with one pointing at the skill: *"For alert-shape crons, `sessionTarget: 'isolated'` is REQUIRED — see `workspace/skills/alert-circuit/SKILL.md` invariants. The earlier 'always main' rule was correct pre-2026-04-30 but is now stale; the single-voice refactor moved alert crons to isolated."*
+
+Second attempt (with explicit feedback about why first attempt was rejected): Bishop read SKILL.md + EXAMPLES.md, applied all 8 invariants, wrote `scripts/test-cron-screen-break-4pm.sh`, used the proper "Reply with exactly this text… Do not call any tools" prompt phrasing. Manual fire validated end-to-end (`status: ok`, Dave received the iMessage). Test A: **passed after AGENTS.md unblock + explicit skill instruction.**
+
+**Test B — hook flavor.** Prompt: *"Bishop, alert me whenever I get an email from `noreply@github.com` — just text me the subject line. Call it `gh-notify`."*
+
+Bishop one-shot this correctly. Created `hooks/transforms/gh-notify.v1.js` mirroring the refurb-alert pattern (email-keyed `chatGuid`, console.log forensic visibility, `null` return on match / `undefined` on miss). Notable architectural insight he added that I hadn't suggested: **attached the transform to the existing `gmail` hook mapping** (the only path that production Gmail traffic actually reaches via the gog watcher) rather than to a synthetic `/hooks/gmail-alert-gh-notify` path that would only be hit by test fires. Also wrote `scripts/test-gh-notify.sh`. Two manual fires both produced `status=200` from BB and Dave received both iMessages. Test B: **passed cleanly.**
+
+(Test artifacts cleaned up after validation. The lasting fixes from this exercise are: AGENTS.md line 111 corrected, plus the trace-script fixes below.)
+
+### Trace-script log path correction
+
+While debugging Test B, discovered that **transforms log via `console.log` to `gateway.log`, not `gateway.err.log`.** The trace scripts were grepping the wrong file and missing the transforms' forensic output. Fixed:
+
+- `scripts/trace-refurb-alert.sh` — HOP 4 now greps `gateway.log` for `[refurb-alert-transform]` lines (POST URL, body, response status, delivered confirmation) instead of the obsolete `chat.send` agent-pattern grep.
+- `scripts/trace-cron.sh` — log peek now searches BOTH `gateway.log` and `gateway.err.log` within the run window (cron's BB call is internal to the plugin and isn't surfaced via console.log, but other diagnostic lines from both files in the window are useful context).
+- `alert-circuit/stencils/trace.sh.tmpl` — HOP 4 documents both transform-circuit and agent-circuit pass criteria.
+
 ---
 
 ## Session Notes — May 1, 2026 (morning + afternoon, save-state)

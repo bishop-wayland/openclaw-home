@@ -31,17 +31,18 @@ print(match[0])
 
 RUNS_FILE="/Users/bishop/.openclaw/cron/runs/$JOB_ID.jsonl"
 GATEWAY_ERR_LOG="/Users/bishop/.openclaw/logs/gateway.err.log"
+GATEWAY_LOG="/Users/bishop/.openclaw/logs/gateway.log"
 
 if [ ! -s "$RUNS_FILE" ]; then
   echo "(no run history at $RUNS_FILE)"
   exit 0
 fi
 
-python3 - "$JOB_NAME" "$JOB_ID" "$RUNS_FILE" "$GATEWAY_ERR_LOG" <<'PYEOF'
+python3 - "$JOB_NAME" "$JOB_ID" "$RUNS_FILE" "$GATEWAY_ERR_LOG" "$GATEWAY_LOG" <<'PYEOF'
 import json, os, sys
 from datetime import datetime, timezone
 
-job_name, job_id, runs_file, err_log = sys.argv[1:5]
+job_name, job_id, runs_file, err_log, gw_log = sys.argv[1:6]
 
 with open(runs_file) as f:
     last = f.readlines()[-1].strip()
@@ -123,28 +124,34 @@ else:
     print(f"  ? status={status} — unexpected, inspect raw run jsonl directly")
 
 # Gateway log peek within run window — best-effort, may have nothing.
-if run_at and os.path.exists(err_log):
-    print("\n──── gateway.err.log (run window) ────")
+# Search BOTH gateway.log (where transforms log via console.log) AND
+# gateway.err.log (where the gateway logs liveness/diagnostic warnings).
+if run_at:
+    print("\n──── gateway logs (run window) ────")
     start = datetime.fromtimestamp((run_at-2000)/1000, tz=timezone.utc).astimezone()
     end_dt = datetime.fromtimestamp((end_ts+2000)/1000, tz=timezone.utc).astimezone()
-    # Build minute-prefixes spanning window
     prefixes = set()
     cur = start.replace(second=0, microsecond=0)
     while cur <= end_dt:
         prefixes.add(cur.strftime("%Y-%m-%dT%H:%M:"))
         cur = cur.replace(minute=cur.minute+1) if cur.minute < 59 else cur.replace(hour=cur.hour+1, minute=0)
-    found = []
-    try:
-        with open(err_log, errors="ignore") as f:
-            for line in f:
-                if any(p in line for p in prefixes):
-                    found.append(line.rstrip())
-                    if len(found) >= 15: break
-    except Exception:
-        pass
-    if found:
-        for ln in found:
-            print(f"  {ln}")
-    else:
-        print("  (no entries in window — BB call detail isn't logged for cron path)")
+    for label, log_path in (("gateway.log", gw_log), ("gateway.err.log", err_log)):
+        if not os.path.exists(log_path):
+            continue
+        found = []
+        try:
+            with open(log_path, errors="ignore") as f:
+                for line in f:
+                    if any(p in line for p in prefixes):
+                        found.append(line.rstrip())
+                        if len(found) >= 12: break
+        except Exception:
+            continue
+        if found:
+            print(f"  [{label}]")
+            for ln in found:
+                print(f"    {ln}")
+    print()
+    print("  (BB plugin's send call is internal to openclaw and not logged via console;")
+    print("   for cron paths, the run jsonl above is the authoritative trace source.)")
 PYEOF

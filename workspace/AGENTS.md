@@ -108,7 +108,7 @@ Whatever you reply (other than `ANNOUNCE_SKIP`) is sent verbatim to Dave's iMess
 **Use cron (via `openclaw cron add`) when:**
 - Exact timing matters ("9:00 AM sharp")
 - One-shot reminders ("remind me in 20 minutes")
-- Always `sessionTarget: "main"` — never isolated.
+- For alert-shape crons (the cron-flavor alert-circuit pattern): `sessionTarget: "isolated"` is REQUIRED — see `workspace/skills/alert-circuit/SKILL.md` invariants. The earlier "always main" rule was correct pre-2026-04-30 but is now stale; the single-voice refactor moved alert crons to isolated.
 
 Long-running housekeeping (inbox drain, memory distillation) belongs in `HEARTBEAT.md`, not cron.
 
