@@ -1,0 +1,1202 @@
+[
+  {
+    "txn_id": "da7c6186-be8d-4104-910a-0ce6108dd2f2",
+    "date": "2026-02-03",
+    "payee": "PCC Community Markets",
+    "amount": -93.0,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "42e4d7c0-2387-4996-a97c-01100d6f6bcd",
+    "date": "2026-02-03",
+    "payee": "Rocket Mortgage",
+    "amount": -79.66,
+    "proposed_category": "\ud83c\udfe0 Home (mortgage, property tax, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "259449b8-7745-4f82-89a1-e3336f5f2ffa",
+    "date": "2026-02-03",
+    "payee": "The Wall Street Journal",
+    "amount": -47.46,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "21e01728-acac-4a45-87c2-3ed5a0f93afe",
+    "date": "2026-02-03",
+    "payee": "Rainier Square",
+    "amount": -12.0,
+    "proposed_category": "\ud83c\udf9f\ufe0f Entertainment (ski tickets, events, museums, etc.)",
+    "confidence": 0.72
+  },
+  {
+    "txn_id": "15882a65-3f60-4f84-b7d0-df1c10b12ad3",
+    "date": "2026-02-03",
+    "payee": "Laconia Market & Caf",
+    "amount": -4.39,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "c4dce7a1-52c1-4389-9ba0-ffe81becb553",
+    "date": "2026-02-04",
+    "payee": "HBO Max",
+    "amount": -25.35,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "bacbdb0f-1143-424e-bb9f-8152af51dca4",
+    "date": "2026-02-06",
+    "payee": "Wibbley's Burgers",
+    "amount": -42.98,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "bf3230c4-47b2-4c43-9301-cdeb0d3311bd",
+    "date": "2026-02-07",
+    "payee": "Half Price Books",
+    "amount": -16.53,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "919ef314-1de2-4b30-948b-4487c144a0e6",
+    "date": "2026-02-09",
+    "payee": "Bleep",
+    "amount": -45.93,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.3
+  },
+  {
+    "txn_id": "2b32c6bb-c0bd-4607-befa-72bd5065f347",
+    "date": "2026-02-09",
+    "payee": "Raarecords 584xcu",
+    "amount": -25.29,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "e87e8728-a745-493c-9345-4a441399267a",
+    "date": "2026-02-10",
+    "payee": "Check Paid #995079",
+    "amount": -4166.67,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.4
+  },
+  {
+    "txn_id": "696615ac-4d41-4e4f-95c6-0d96370fba63",
+    "date": "2026-02-10",
+    "payee": "Check Paid #995080",
+    "amount": -292.58,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.45
+  },
+  {
+    "txn_id": "4c25c931-7c43-44aa-ba3b-ab0e3cdc908f",
+    "date": "2026-02-10",
+    "payee": "ARCO Parmar",
+    "amount": -78.2,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "a085f5b9-3101-4271-bea8-f7fc93de792b",
+    "date": "2026-02-11",
+    "payee": "Washington Vehicle Licensing",
+    "amount": -199.82,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "54e8f378-e6bf-4f01-b4dc-5021f4cdd1b1",
+    "date": "2026-02-12",
+    "payee": "Locochon",
+    "amount": -46.17,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "2568109d-d802-45b9-ad45-c1d6718e9fe1",
+    "date": "2026-02-13",
+    "payee": "Zip Market",
+    "amount": -12.4,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b29d216e-3f5e-4bc6-8aa3-0bd8fa64a9cf",
+    "date": "2026-02-13",
+    "payee": "META PAYROLL 260213",
+    "amount": 3470.07,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "96e45042-5365-4a84-892b-fb2092fb3ad6",
+    "date": "2026-02-14",
+    "payee": "Airbnb",
+    "amount": 350.0,
+    "proposed_category": "\ud83c\udfe8 Vacation Lodging (Hotels, AirBnB, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "42447d6f-8d8a-4298-a7e3-7ec493120578",
+    "date": "2026-02-16",
+    "payee": "Mountain View Diner",
+    "amount": -48.0,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "0bc927fc-df54-4397-b12f-a38bc22f873e",
+    "date": "2026-02-16",
+    "payee": "Pie Dive Bar",
+    "amount": -43.44,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "fd66d41b-5bfe-438d-8fb9-c754adbc4ed1",
+    "date": "2026-02-17",
+    "payee": "Rocky Mountain Ski Shop.",
+    "amount": -541.9,
+    "proposed_category": "\ud83c\udf9f\ufe0f Entertainment (ski tickets, events, museums, etc.)",
+    "confidence": 0.65
+  },
+  {
+    "txn_id": "ead4e766-bca6-4f61-baff-48c5395893f4",
+    "date": "2026-02-17",
+    "payee": "Heath Ceramics",
+    "amount": -86.26,
+    "proposed_category": "\ud83d\udecb\ufe0f Furnishings and Decor",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "7eaf61dc-4eb3-4ad0-94e7-8df62d3c3c06",
+    "date": "2026-02-17",
+    "payee": "Bandcampnorthernspyr",
+    "amount": -40.74,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b16d6d17-1893-45b6-8495-bc3dd151d7b6",
+    "date": "2026-02-18",
+    "payee": "White Buffalo Saloon",
+    "amount": -64.5,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "55b2e2d9-eda6-403b-8a88-b8cddb41d07c",
+    "date": "2026-02-19",
+    "payee": "Premier Periodontics",
+    "amount": -250.0,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "216086ec-1606-4e47-b99c-53b625ff9efc",
+    "date": "2026-02-21",
+    "payee": "Nicolino Ristorante Ita",
+    "amount": -81.0,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "a71a7e6a-e419-446f-9ee5-34c4c82c260c",
+    "date": "2026-02-23",
+    "payee": "The Box & Burgers Eatery",
+    "amount": -70.35,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "12edc7d2-fd9b-47a9-bb12-878d9c113799",
+    "date": "2026-02-23",
+    "payee": "Garmin",
+    "amount": -16.55,
+    "proposed_category": "\ud83d\udcbb Electronics and Software",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "63c203b3-86fe-4405-8d20-a26aa71f083f",
+    "date": "2026-02-24",
+    "payee": "Trade Coffee Co.",
+    "amount": -65.97,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "cac38add-f89d-47b9-968e-555bd4ec5bc3",
+    "date": "2026-02-24",
+    "payee": "Half Price Books",
+    "amount": -35.81,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "0fcf1216-0f15-4b72-b488-329f6487d9af",
+    "date": "2026-02-26",
+    "payee": "Amonos Taco Truck",
+    "amount": -35.38,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "4ce14aff-f11f-4fa0-8398-7d07572a269d",
+    "date": "2026-02-27",
+    "payee": "Dunn Lumber",
+    "amount": -84.13,
+    "proposed_category": "\ud83d\udee0\ufe0f Home Maintenance (upkeep, cleaners, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "f0dc61dd-6f96-441f-a5de-27777601ed55",
+    "date": "2026-02-27",
+    "payee": "Wibbley's Burgers",
+    "amount": -38.34,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.98
+  },
+  {
+    "txn_id": "358a7d22-795c-4891-8147-1885fa2cf3ae",
+    "date": "2026-02-27",
+    "payee": "Wibbley's Burgers",
+    "amount": -22.49,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "6488db5e-2345-47d2-8eff-d87eb6300fef",
+    "date": "2026-02-27",
+    "payee": "META PAYROLL 260227",
+    "amount": 4549.93,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "b307decf-5b7c-47cd-9ac3-9d0eb5851d88",
+    "date": "2026-02-28",
+    "payee": "Half Price Books",
+    "amount": -33.06,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "3e7b3c22-6325-44de-a9e3-e0032f33c20c",
+    "date": "2026-03-02",
+    "payee": "Safeway",
+    "amount": -308.12,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "ed6597fd-0f52-4273-8a62-d5e2fc1b0ec5",
+    "date": "2026-03-02",
+    "payee": "WA DIR ACH CONTRIB 030226",
+    "amount": -100.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "d274f414-cf22-44b1-bf4d-8ea239144ad7",
+    "date": "2026-03-02",
+    "payee": "WA DIR ACH CONTRIB 030226",
+    "amount": -100.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "01b2930e-90c2-434c-a465-ea4dd98800ae",
+    "date": "2026-03-02",
+    "payee": "Google Workspace",
+    "amount": -18.55,
+    "proposed_category": "\ud83d\udcbb Electronics and Software",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "c84f9f29-2166-4547-a3f4-9fe10dfbd5b3",
+    "date": "2026-03-02",
+    "payee": "Tastes on the Fly",
+    "amount": -5.95,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "d9c3d801-547f-4a2d-9af2-4e6475446737",
+    "date": "2026-03-03",
+    "payee": "8th Street Steakhouse",
+    "amount": -261.52,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "d9c75fbe-8f20-48ae-9a1c-247247b15108",
+    "date": "2026-03-03",
+    "payee": "Fleischer Sport",
+    "amount": -71.4,
+    "proposed_category": "\ud83d\udeb4 Recreational Equipment",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "56fc6494-bf53-442a-a2d7-4fcd1432b2ca",
+    "date": "2026-03-03",
+    "payee": "The Wall Street Journal",
+    "amount": -47.46,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "db53a223-1037-402e-9678-d7ad799a2d34",
+    "date": "2026-03-04",
+    "payee": "HBO Max",
+    "amount": -25.35,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "c51c94ee-1751-49f0-bbef-0a34cf940a55",
+    "date": "2026-03-04",
+    "payee": "Four Points Lodge",
+    "amount": -24.45,
+    "proposed_category": "\ud83c\udfe8 Vacation Lodging (Hotels, AirBnB, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "ed1c2c9e-ac48-41cd-9c50-461f4afbbb81",
+    "date": "2026-03-05",
+    "payee": "Laundry and Creekside",
+    "amount": -419.69,
+    "proposed_category": "\ud83d\udee0\ufe0f Home Maintenance (upkeep, cleaners, etc.)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "995e24a8-9c84-4cc0-8433-5f8b7c4b3ff0",
+    "date": "2026-03-05",
+    "payee": "Schmiggity's",
+    "amount": -39.46,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.3
+  },
+  {
+    "txn_id": "e54e2d5f-05b8-404f-ac02-d9f68a72d827",
+    "date": "2026-03-05",
+    "payee": "Stio Mountain",
+    "amount": -26.02,
+    "proposed_category": "\ud83c\udf9f\ufe0f Entertainment (ski tickets, events, museums, etc.)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "548320b0-1bb0-417a-8ad8-cae75d2c9ad6",
+    "date": "2026-03-06",
+    "payee": "Sunpies",
+    "amount": -48.63,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "989ad578-537c-468c-9fe5-74d58b70f5f9",
+    "date": "2026-03-06",
+    "payee": "Steamboat Ski & Resort",
+    "amount": -26.96,
+    "proposed_category": "\ud83c\udf9f\ufe0f Entertainment (ski tickets, events, museums, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "39a027eb-f123-4fd8-b425-a57a615a8973",
+    "date": "2026-03-07",
+    "payee": "Truffle Pig",
+    "amount": -127.46,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b13d0c09-78b3-41e5-8bfc-fd70209d557b",
+    "date": "2026-03-07",
+    "payee": "Root Down",
+    "amount": -49.31,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "cd1dcb00-0ce8-42e9-9541-87e398d2e500",
+    "date": "2026-03-07",
+    "payee": "Thunderhead Restaurant",
+    "amount": -21.68,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "e0e511f1-c466-453d-814e-ee83c4ce74ab",
+    "date": "2026-03-07",
+    "payee": "The Fuel Stop",
+    "amount": -10.88,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "63eb7cc5-aeac-485f-8fd3-376bb6a243a0",
+    "date": "2026-03-08",
+    "payee": "Mobile Banking Deposit",
+    "amount": 560.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "9ad354a1-7558-4ffc-adc0-560460823705",
+    "date": "2026-03-09",
+    "payee": "King County Ww Td",
+    "amount": -186.69,
+    "proposed_category": "\u26a1\ufe0f Utilities (Electric, Phone, Internet, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "ba2e0603-fa42-477e-91be-52be8cb4887e",
+    "date": "2026-03-09",
+    "payee": "Bandcampdjtoner Bandcampcom",
+    "amount": -64.16,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "98eb02fc-e7f8-4684-b980-7645689a7fd7",
+    "date": "2026-03-09",
+    "payee": "McDonald's",
+    "amount": -7.26,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "122eefd9-0413-4b96-ac59-817d0c4851b8",
+    "date": "2026-03-10",
+    "payee": "FedEx",
+    "amount": -16.8,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.4
+  },
+  {
+    "txn_id": "e8a9c865-6dcf-4e6f-a81a-d431761c8ea1",
+    "date": "2026-03-10",
+    "payee": "Dote Coffee Bar",
+    "amount": -12.12,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "7a4c7fff-b617-4252-b860-e7b43b1b3bc5",
+    "date": "2026-03-11",
+    "payee": "Rosemary and Co",
+    "amount": -67.4,
+    "proposed_category": "\ud83c\udfa8 Art Supplies",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "0c049b28-0e49-44ba-90a8-757ea53c3ca8",
+    "date": "2026-03-11",
+    "payee": "Rosemary and Co",
+    "amount": -50.76,
+    "proposed_category": "\ud83c\udfa8 Art Supplies",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b9866a69-5d9b-4b08-bee7-f8b724a14025",
+    "date": "2026-03-11",
+    "payee": "Rose Hill Car Wash",
+    "amount": -44.37,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "4a7c9c2d-c95a-40e8-bfd3-09fec1eff612",
+    "date": "2026-03-12",
+    "payee": "Check Paid #995082",
+    "amount": -4166.67,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.35
+  },
+  {
+    "txn_id": "43e995d2-99cb-4907-b638-8e04f6974693",
+    "date": "2026-03-12",
+    "payee": "Premier Periodontics",
+    "amount": -2717.4,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "4f5688d4-9561-49d2-bb21-8bb6d926a7e9",
+    "date": "2026-03-12",
+    "payee": "Sunspel",
+    "amount": -540.98,
+    "proposed_category": "\ud83d\udc56 Clothing",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "adf12e97-3e9e-4f43-980e-f9dd30b348da",
+    "date": "2026-03-12",
+    "payee": "Check Paid #995083",
+    "amount": -292.58,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.45
+  },
+  {
+    "txn_id": "f03d0de1-e47c-4a20-b0b1-85b24f5cd9f0",
+    "date": "2026-03-12",
+    "payee": "Amonos Taco Truck",
+    "amount": -14.88,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "0dc6d1d4-c68f-45f5-847f-7f32d5a75a51",
+    "date": "2026-03-13",
+    "payee": "META PAYROLL 260313",
+    "amount": 3818.11,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "0f4a577b-f9cd-4acd-b23e-52758ea8320b",
+    "date": "2026-03-14",
+    "payee": "Half Price Books",
+    "amount": -8.82,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "3d57661f-66af-4579-9917-cf5e1b29abbb",
+    "date": "2026-03-16",
+    "payee": "Rosemary and Co",
+    "amount": -57.44,
+    "proposed_category": "\ud83c\udfa8 Art Supplies",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "dd351a8e-ae84-4b00-9f6a-0f9676554f98",
+    "date": "2026-03-17",
+    "payee": "Dunn Kirkland",
+    "amount": -200.48,
+    "proposed_category": "\ud83d\udee0\ufe0f Home Maintenance (upkeep, cleaners, etc.)",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "eba2e6cc-6d83-4147-8d1a-efe4808a2a27",
+    "date": "2026-03-17",
+    "payee": "Vg Grand Avenue Market",
+    "amount": -8.3,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "498c31ef-7792-4b75-820e-10a2a7de187e",
+    "date": "2026-03-18",
+    "payee": "PCC - KIRKLAND KIRKLAND",
+    "amount": -203.0,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "66dd2ffb-344a-4968-a9e0-66ebe2a8a51e",
+    "date": "2026-03-18",
+    "payee": "Kirkland Massage Ce",
+    "amount": -130.0,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "d8b8a275-3467-4007-8e69-116766e5375b",
+    "date": "2026-03-18",
+    "payee": "Red Radish",
+    "amount": -11.45,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "e5b448ec-c58a-4504-9f6a-baea68518c41",
+    "date": "2026-03-18",
+    "payee": "Zoka Coffee",
+    "amount": -8.59,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "c980f0a3-6035-4284-90e2-7fd8c16489b1",
+    "date": "2026-03-19",
+    "payee": "Dickies",
+    "amount": -111.27,
+    "proposed_category": "\ud83d\udc56 Clothing",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "6045e765-7604-4aaf-bd2a-33762822fc55",
+    "date": "2026-03-19",
+    "payee": "Amonos Taco Truck",
+    "amount": -14.88,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.98
+  },
+  {
+    "txn_id": "bfa7fdeb-4fb5-4e64-8069-3f88650486ed",
+    "date": "2026-03-20",
+    "payee": "Dunn Kirkland",
+    "amount": -92.21,
+    "proposed_category": "\ud83d\udee0\ufe0f Home Maintenance (upkeep, cleaners, etc.)",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "70302089-7017-4736-9a60-b83f0ecc1380",
+    "date": "2026-03-20",
+    "payee": "Wibbley's Burgers",
+    "amount": -22.81,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "bc2ad6d5-4376-4259-9299-69757803a050",
+    "date": "2026-03-20",
+    "payee": "META PAYROLL 260320",
+    "amount": 73005.43,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "9404f8aa-733a-4740-b0c0-a647a0d47f91",
+    "date": "2026-03-21",
+    "payee": "Sunspel",
+    "amount": -281.53,
+    "proposed_category": "\ud83d\udc56 Clothing",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "2453f58c-fff0-40c4-a891-3be91e2669c9",
+    "date": "2026-03-21",
+    "payee": "Epson Store",
+    "amount": -112.6,
+    "proposed_category": "\ud83d\udcbb Electronics and Software",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "46949094-e196-423f-96ed-5e4ca4f46eab",
+    "date": "2026-03-21",
+    "payee": "FedEx",
+    "amount": -22.75,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.45
+  },
+  {
+    "txn_id": "1b31090d-cfc0-4da0-bd69-e9f2547e0707",
+    "date": "2026-03-21",
+    "payee": "Garmin",
+    "amount": -16.55,
+    "proposed_category": "\ud83d\udcbb Electronics and Software",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "19a60b8c-4242-47a3-80b7-7892e80a0844",
+    "date": "2026-03-25",
+    "payee": "Mission Workshop",
+    "amount": -118.13,
+    "proposed_category": "\ud83d\udeb4 Recreational Equipment",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "00f0bad3-0838-4d83-8ca7-69e33af6f97c",
+    "date": "2026-03-26",
+    "payee": "Dunn Kirkland",
+    "amount": -143.07,
+    "proposed_category": "\ud83d\udee0\ufe0f Home Maintenance (upkeep, cleaners, etc.)",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "f6b1a664-a743-4532-92ca-8ab3a3fc6525",
+    "date": "2026-03-26",
+    "payee": "Amonos Taco Truck",
+    "amount": -14.88,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.98
+  },
+  {
+    "txn_id": "484dc6d7-2452-470f-84b2-625f20517cca",
+    "date": "2026-03-26",
+    "payee": "Zoka Coffee",
+    "amount": -7.26,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "4820bb31-edfc-4555-9b91-f1600eb293d0",
+    "date": "2026-03-27",
+    "payee": "Washington Department of Licensing",
+    "amount": -192.61,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "10724472-e5d4-4e38-afa5-8d0461f45917",
+    "date": "2026-03-27",
+    "payee": "Trade Coffee",
+    "amount": -65.97,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.45
+  },
+  {
+    "txn_id": "6634b9f7-b90e-482e-a656-fc4f46686656",
+    "date": "2026-03-27",
+    "payee": "SP SUNSPEL US NEW YORK",
+    "amount": 270.49,
+    "proposed_category": "\ud83d\udc56 Clothing",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "cd094907-befe-4028-9049-c0309ac0a818",
+    "date": "2026-03-27",
+    "payee": "META PAYROLL 260327",
+    "amount": 4210.43,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "30731ff1-2c8f-4303-889f-a1b153dfa17b",
+    "date": "2026-03-28",
+    "payee": "Clementine",
+    "amount": -7.67,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "da283acb-0843-477e-a96e-3acc0e2748eb",
+    "date": "2026-03-29",
+    "payee": "ZELLE FROM ENRICO GALLIANO",
+    "amount": 19.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "72df1127-2e8f-4fb4-a5d1-b7f2e6f2f3f1",
+    "date": "2026-03-29",
+    "payee": "ZELLE FROM ENRICO GALLIANO,Effective 03",
+    "amount": 66.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "abd133fa-b2b7-4e64-ad4a-80218012dbe6",
+    "date": "2026-03-30",
+    "payee": "Vivienne's Bistro",
+    "amount": -330.99,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "faf766e0-1530-44c6-af0c-f2e199a8ca05",
+    "date": "2026-03-30",
+    "payee": "Allister",
+    "amount": -93.72,
+    "proposed_category": "\ud83c\udf9f\ufe0f Entertainment (ski tickets, events, museums, etc.)",
+    "confidence": 0.65
+  },
+  {
+    "txn_id": "0985b4d9-28a5-4a1c-b570-142d25542f4f",
+    "date": "2026-03-31",
+    "payee": "The Wall Street Journal",
+    "amount": -47.46,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "1919e889-e4a4-4d5b-887e-de296fd731ed",
+    "date": "2026-03-31",
+    "payee": "Premseat...",
+    "amount": -29.0,
+    "proposed_category": "\ud83c\udf9f\ufe0f Entertainment (ski tickets, events, museums, etc.)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "224ca403-2169-4635-852c-957b1c34eda1",
+    "date": "2026-04-01",
+    "payee": "WA DIR ACH CONTRIB 040126",
+    "amount": -100.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "a192222b-839e-4bc1-b469-7f93f093e453",
+    "date": "2026-04-01",
+    "payee": "WA DIR ACH CONTRIB 040126",
+    "amount": -100.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "92c44437-988d-47de-ba1a-96f9004c2ec8",
+    "date": "2026-04-01",
+    "payee": "Hudson St",
+    "amount": -33.11,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.35
+  },
+  {
+    "txn_id": "993c6575-c56a-408a-85bc-e64908230ff3",
+    "date": "2026-04-02",
+    "payee": "Google Workspace",
+    "amount": -18.55,
+    "proposed_category": "\ud83d\udcbb Electronics and Software",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "c6d56b15-dca9-4a78-8db3-0cb53f60bc8e",
+    "date": "2026-04-02",
+    "payee": "LouLou Marche",
+    "amount": -5.36,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b127aaf9-4348-4272-8676-996a4eed09a7",
+    "date": "2026-04-03",
+    "payee": "Zona Rosa",
+    "amount": -176.82,
+    "proposed_category": "\ud83d\udc56 Clothing",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b1e5d976-a7e6-4e50-be8d-9cfde94c4b19",
+    "date": "2026-04-03",
+    "payee": "Bill's Cafe",
+    "amount": -28.28,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "9824e1eb-8706-4f5b-b2e3-2c534d9946ac",
+    "date": "2026-04-03",
+    "payee": "CVS Caremark Mail",
+    "amount": -9.44,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "26277057-6c10-4979-a364-b5e947bcf7c0",
+    "date": "2026-04-04",
+    "payee": "Crafted Elements Puslinch",
+    "amount": -57.95,
+    "proposed_category": "\ud83c\udfa8 Art Supplies",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "8a789b1c-7af6-4d1a-ab5a-522537cb47af",
+    "date": "2026-04-04",
+    "payee": "HBO Max",
+    "amount": -25.35,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "1bd71d3e-42c1-41dc-8433-d9b55059953d",
+    "date": "2026-04-04",
+    "payee": "7-Eleven",
+    "amount": -3.98,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.65
+  },
+  {
+    "txn_id": "23b52e1b-72a4-4aca-841f-af9b04a86479",
+    "date": "2026-04-06",
+    "payee": "Sublime Hq Pty LTD",
+    "amount": -80.0,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "c1ddf5d1-5d31-4362-a08e-819fe48421dd",
+    "date": "2026-04-06",
+    "payee": "Bill's Cafe",
+    "amount": -58.24,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "278d22e4-8a4b-4d24-a072-1694cd41f78c",
+    "date": "2026-04-08",
+    "payee": "Jay's Kirkland Autocare",
+    "amount": -388.82,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "d2a6caa4-60e9-4d46-b9b6-3e834f9583ba",
+    "date": "2026-04-10",
+    "payee": "Buttera Motors Inc",
+    "amount": -730.99,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "27e77737-632e-4c31-b937-17b30fcd975d",
+    "date": "2026-04-10",
+    "payee": "Wibbley's Burgers",
+    "amount": -41.99,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "75e28938-1f9d-4c99-abec-14ae42dd29c5",
+    "date": "2026-04-10",
+    "payee": "Salt & Straw",
+    "amount": -11.21,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "5abd83b6-9086-41be-ad93-14b8c07e2748",
+    "date": "2026-04-10",
+    "payee": "META PAYROLL 260410",
+    "amount": 4210.44,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "ad2c2967-30a9-4068-87da-b701c906b138",
+    "date": "2026-04-13",
+    "payee": "Mobile Banking Deposit",
+    "amount": 420.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "3799d225-4bf2-49cf-a24b-31bd92183f66",
+    "date": "2026-04-13",
+    "payee": "Mobile Banking Deposit",
+    "amount": 448.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "125a8fe3-7dc2-498c-984f-8c6ed8eb103f",
+    "date": "2026-04-13",
+    "payee": "Mobile Banking Deposit",
+    "amount": 504.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "197402d8-44a1-44e9-982e-f3144d946214",
+    "date": "2026-04-14",
+    "payee": "Check Paid #995085",
+    "amount": -4166.67,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.6
+  },
+  {
+    "txn_id": "a5383360-0de2-46d5-8242-79a5431e5d27",
+    "date": "2026-04-14",
+    "payee": "Check Paid #995086",
+    "amount": -292.58,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.4
+  },
+  {
+    "txn_id": "7fa280ea-17b0-4bd6-833b-405919e1df80",
+    "date": "2026-04-14",
+    "payee": "Evergreen Health Laboratory",
+    "amount": -27.34,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "debc2627-0c0a-4ea4-b55b-b12d5d20beb2",
+    "date": "2026-04-15",
+    "payee": "Epson Store",
+    "amount": -56.3,
+    "proposed_category": "\ud83d\udcbb Electronics and Software",
+    "confidence": 0.92
+  },
+  {
+    "txn_id": "f93325f1-5d39-4213-ab72-a56cffd3f563",
+    "date": "2026-04-16",
+    "payee": "Fizik Pozzoleone",
+    "amount": -153.0,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "dddb0d29-30fd-4a46-aec9-bbbd487a9416",
+    "date": "2026-04-16",
+    "payee": "Kirkland Massage Cent",
+    "amount": -130.0,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "3de6f32d-fb0a-417c-bcda-2425b3b6e8eb",
+    "date": "2026-04-17",
+    "payee": "PCC - KIRKLAND KIRKLAND",
+    "amount": -273.61,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "d8e3ee0a-fa42-48b6-a43f-15da970a5132",
+    "date": "2026-04-17",
+    "payee": "ONLINE/MOBILE PAYMENT CONF#5vxvntslx",
+    "amount": 8818.96,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.65
+  },
+  {
+    "txn_id": "7cce2be1-e7a2-4d8d-8571-42e1d3c28bcd",
+    "date": "2026-04-18",
+    "payee": "Mobile Banking Deposit",
+    "amount": 45.5,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "ea0cec85-16f4-4aa3-b392-a1e95b11aede",
+    "date": "2026-04-18",
+    "payee": "Mobile Banking Deposit",
+    "amount": 45.5,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "a1b0434a-5b88-46e0-a051-f36b464dc894",
+    "date": "2026-04-18",
+    "payee": "Mobile Banking Deposit",
+    "amount": 420.0,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "48e52a5d-f0b5-4804-a93e-20b6227e3e86",
+    "date": "2026-04-19",
+    "payee": "The Sill",
+    "amount": -263.85,
+    "proposed_category": "\ud83d\udecb\ufe0f Furnishings and Decor",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "70aa21c6-8785-4378-ae64-44aa8c60ad2d",
+    "date": "2026-04-19",
+    "payee": "Zelle Transfer",
+    "amount": -20.0,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "417bd6c3-d62e-40e3-8c8b-2ad1c08729c2",
+    "date": "2026-04-20",
+    "payee": "Bank of America Payment",
+    "amount": -8818.96,
+    "proposed_category": "Dave Alaska Visa",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "be3778fa-b666-4cdc-b099-38263f0b5e27",
+    "date": "2026-04-20",
+    "payee": "Thruline Coffee",
+    "amount": -16.65,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "cc46dd2e-e205-4b71-b262-bdb494a3b28b",
+    "date": "2026-04-20",
+    "payee": "Kirkland",
+    "amount": -12.09,
+    "proposed_category": "\ud83d\udce6 Household Supplies (Amazon)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "98456b30-69a3-46e2-813a-a7d2dd1a345d",
+    "date": "2026-04-20",
+    "payee": "Graphite Arts Center",
+    "amount": -10.0,
+    "proposed_category": "\ud83c\udfa8 Art Supplies",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "9dd4cf94-b3b3-4114-b5ad-38557a4e9e79",
+    "date": "2026-04-21",
+    "payee": "Kappa Kappa Gamma",
+    "amount": -846.0,
+    "proposed_category": "\ud83d\udc6c\ud83c\udffb Kids (child expenses, personal budget)",
+    "confidence": 0.65
+  },
+  {
+    "txn_id": "d0866ed3-ef5c-458c-b898-a4d228fa7008",
+    "date": "2026-04-21",
+    "payee": "Moss Bay Beer Hall",
+    "amount": -31.29,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "ea79b510-0938-42b2-a90b-f9c800bc88ad",
+    "date": "2026-04-21",
+    "payee": "Garmin",
+    "amount": -16.55,
+    "proposed_category": "\ud83d\udcbb Electronics and Software",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "9f2df151-e3cc-4da6-a166-d549ba266f4f",
+    "date": "2026-04-22",
+    "payee": "Fizik Pozzoleone",
+    "amount": -179.99,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "cf36b90c-ece6-4e50-a9ef-a61e6eb6504b",
+    "date": "2026-04-22",
+    "payee": "Vanguard",
+    "amount": 42.27,
+    "proposed_category": "\ud83d\udcbc Financial (CPA, Advisor, Banks Fees, etc.)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "a9909231-eb53-4e1e-9409-98227e06e5cf",
+    "date": "2026-04-23",
+    "payee": "Child and Adolescent",
+    "amount": -300.0,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "de86fec0-8b93-425f-8a0c-71d414b6ef16",
+    "date": "2026-04-23",
+    "payee": "Livelymh Livelymentalh",
+    "amount": -210.0,
+    "proposed_category": "\ud83c\udfe5 Healthcare (out of pocket, therapy, massage, etc.)",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "1fec40d6-63b4-4fbe-8e60-fdf1f4ed4da8",
+    "date": "2026-04-24",
+    "payee": "Meta Payroll",
+    "amount": 4167.7,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "589a4c4a-079c-47bd-9740-6021de5d201e",
+    "date": "2026-04-25",
+    "payee": "Fizik Pozzoleone",
+    "amount": -359.98,
+    "proposed_category": "\ud83c\udfcb\ufe0f Gym Classes",
+    "confidence": 0.75
+  },
+  {
+    "txn_id": "37bfeb1b-286a-4e67-9c4e-da0a754f1fb9",
+    "date": "2026-04-25",
+    "payee": "Epulo Bistro",
+    "amount": -161.91,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  }
+]

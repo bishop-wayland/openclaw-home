@@ -1,0 +1,138 @@
+[
+  {
+    "txn_id": "da7c6186-be8d-4104-910a-0ce6108dd2f2",
+    "date": "2026-02-03",
+    "payee": "PCC Community Markets",
+    "amount": -93.0,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "42e4d7c0-2387-4996-a97c-01100d6f6bcd",
+    "date": "2026-02-03",
+    "payee": "Rocket Mortgage",
+    "amount": -79.66,
+    "proposed_category": "\ud83c\udfe0 Home (mortgage, property tax, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "259449b8-7745-4f82-89a1-e3336f5f2ffa",
+    "date": "2026-02-03",
+    "payee": "The Wall Street Journal",
+    "amount": -47.46,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "21e01728-acac-4a45-87c2-3ed5a0f93afe",
+    "date": "2026-02-03",
+    "payee": "Rainier Square",
+    "amount": -12.0,
+    "proposed_category": "\ud83c\udf9f\ufe0f Entertainment (ski tickets, events, museums, etc.)",
+    "confidence": 0.65
+  },
+  {
+    "txn_id": "15882a65-3f60-4f84-b7d0-df1c10b12ad3",
+    "date": "2026-02-03",
+    "payee": "Laconia Market & Caf",
+    "amount": -4.39,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "c4dce7a1-52c1-4389-9ba0-ffe81becb553",
+    "date": "2026-02-04",
+    "payee": "HBO Max",
+    "amount": -25.35,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "bacbdb0f-1143-424e-bb9f-8152af51dca4",
+    "date": "2026-02-06",
+    "payee": "Wibbley's Burgers",
+    "amount": -42.98,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.99
+  },
+  {
+    "txn_id": "bf3230c4-47b2-4c43-9301-cdeb0d3311bd",
+    "date": "2026-02-07",
+    "payee": "Half Price Books",
+    "amount": -16.53,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "919ef314-1de2-4b30-948b-4487c144a0e6",
+    "date": "2026-02-09",
+    "payee": "Bleep",
+    "amount": -45.93,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.3
+  },
+  {
+    "txn_id": "2b32c6bb-c0bd-4607-befa-72bd5065f347",
+    "date": "2026-02-09",
+    "payee": "Raarecords 584xcu",
+    "amount": -25.29,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "e87e8728-a745-493c-9345-4a441399267a",
+    "date": "2026-02-10",
+    "payee": "Check Paid #995079",
+    "amount": -4166.67,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.6
+  },
+  {
+    "txn_id": "696615ac-4d41-4e4f-95c6-0d96370fba63",
+    "date": "2026-02-10",
+    "payee": "Check Paid #995080",
+    "amount": -292.58,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.4
+  },
+  {
+    "txn_id": "4c25c931-7c43-44aa-ba3b-ab0e3cdc908f",
+    "date": "2026-02-10",
+    "payee": "ARCO Parmar",
+    "amount": -78.2,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "a085f5b9-3101-4271-bea8-f7fc93de792b",
+    "date": "2026-02-11",
+    "payee": "Washington Vehicle Licensing",
+    "amount": -199.82,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "54e8f378-e6bf-4f01-b4dc-5021f4cdd1b1",
+    "date": "2026-02-12",
+    "payee": "Locochon",
+    "amount": -46.17,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "2568109d-d802-45b9-ad45-c1d6718e9fe1",
+    "date": "2026-02-13",
+    "payee": "Zip Market",
+    "amount": -12.4,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b29d216e-3f5e-4bc6-8aa3-0bd8fa64a9cf",
+    "date": "2026-02-13",
+    "payee": "META PAYROLL 260213",
+    "amount": 3470.07,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.99
+  }
+]

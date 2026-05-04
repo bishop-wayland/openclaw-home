@@ -1,0 +1,18 @@
+{
+  "budget_id": "2f6bc004-22ff-4e29-be77-a8907cb1c537",
+  "budget_label": "David's Budget",
+  "lookback_days": 90,
+  "llm_model": "claude-haiku-4-5",
+  "llm_classify_max_tokens": 200,
+  "llm_narrator_enabled": true,
+  "llm_narrator_max_tokens": 150,
+  "max_budget_usd": 5.0,
+  "email_recipient": "otte.dave@gmail.com",
+  "email_from_label": "Bishop YNAB",
+  "imessage_channel": "bluebubbles",
+  "imessage_target": "iMessage;-;otte.dave@gmail.com",
+  "web_search_provider": "duckduckgo",
+  "web_search_timeout_seconds": 5,
+  "partial_match_min_key_length": 5,
+  "pending_approval_ttl_days": 30
+}
