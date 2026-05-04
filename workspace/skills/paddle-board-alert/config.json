@@ -1,0 +1,11 @@
+{
+  "location": {
+    "name": "Waverly Park, Kirkland WA",
+    "latitude": 47.6911,
+    "longitude": -122.2105
+  },
+  "threshold_mph": 8.0,
+  "window_start_hour": 6,
+  "window_end_hour": 9,
+  "message_template": "☀️ Good paddle morning, Dave — wind staying under {threshold:.0f} mph through the {window_start}–{window_end} AM window at {location}. Max forecast: {max_wind:.1f} mph."
+}

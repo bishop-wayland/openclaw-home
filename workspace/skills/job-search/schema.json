@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "JobSearchJudgmentOutput",
+  "description": "Strict shape Claude must return after judging pre-filtered postings against criteria.md.",
+  "type": "object",
+  "required": ["results", "skipped_companies", "filtered_out_count"],
+  "additionalProperties": false,
+  "properties": {
+    "results": {
+      "type": "array",
+      "description": "Postings that passed all criteria, ranked by relevance within tier.",
+      "items": {
+        "type": "object",
+        "required": ["tier", "company", "title", "url", "location", "relevance_blurb"],
+        "additionalProperties": false,
+        "properties": {
+          "tier":     {"type": "string", "enum": ["T1", "T2", "T3", "T4"]},
+          "company":  {"type": "string", "minLength": 1, "maxLength": 80},
+          "title":    {"type": "string", "minLength": 1, "maxLength": 200},
+          "url":      {"type": "string", "minLength": 8, "maxLength": 500},
+          "location": {"type": "string", "minLength": 1, "maxLength": 200},
+          "relevance_blurb": {"type": "string", "minLength": 10, "maxLength": 240}
+        }
+      }
+    },
+    "skipped_companies": {
+      "type": "array",
+      "description": "Companies that could NOT be successfully scanned. Empty if scan was clean.",
+      "items": {
+        "type": "object",
+        "required": ["company", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "company": {"type": "string", "minLength": 1, "maxLength": 80},
+          "reason":  {"type": "string", "minLength": 5, "maxLength": 200}
+        }
+      }
+    },
+    "filtered_out_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of postings considered and rejected in this judgment pass (after Python pre-filter)."
+    }
+  }
+}

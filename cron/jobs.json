@@ -125,6 +125,36 @@
         "to": "+16508239528"
       },
       "state": {}
+    },
+    {
+      "id": "910f0e5e-645d-430e-a969-f4e6f2b512ca",
+      "name": "paddle-board-alert",
+      "enabled": true,
+      "createdAtMs": 1777867563474,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 5 * * *",
+        "tz": "America/Los_Angeles"
+      },
+      "sessionTarget": "isolated",
+      "wakeMode": "now",
+      "payload": {
+        "kind": "agentTurn",
+        "message": "Paddle-board forecast check for Dave at 5 AM PT.\n\nCall the exec tool exactly once with this command:\n\npython3 /Users/bishop/.openclaw/workspace/skills/paddle-board-alert/scripts/check.py --real-send\n\nThat is your only job. Do not narrate. Do not summarize. Do not call any other tools. The Python script handles fetching the forecast, evaluating the wind window, and (on a go-day) delivering the iMessage to Dave directly via BlueBubbles. After exec returns, reply with the single word OK. Nothing else.",
+        "model": "anthropic/claude-haiku-4-5",
+        "timeoutSeconds": 90,
+        "lightContext": true,
+        "tools": [
+          "exec"
+        ]
+      },
+      "failureAlert": {
+        "after": 1,
+        "channel": "bluebubbles",
+        "to": "+16508239528",
+        "cooldownMs": 3600000
+      },
+      "state": {}
     }
   ]
 }
