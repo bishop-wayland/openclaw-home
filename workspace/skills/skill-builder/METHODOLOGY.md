@@ -171,14 +171,47 @@ If the skill is meant to be triggered by Dave (not just by cron), validate one r
 
 **Contract:** Bishop can answer "how do I use this skill?" by reading SKILL.md alone.
 
-### Step 7 — Schedule (if applicable)
+### Step 7 — Install (with write-disabled preview)
 
-If the skill is scheduled, install via the appropriate mechanism:
+The build is automated end-to-end through install. The worker writes the install scripts; Bishop runs them after the announce; Dave's "go" flips a single gate from preview to live. **There is no manual hand-install step.**
+
+**The principle: install ships in preview mode, lives behind one gate.** Skills whose production runs perform external writes beyond Dave's inbox (YNAB PATCH, third-party API state changes, shared file writes outside the skill, irreversible network calls) install with their write hops *gated off* by default. The cron is registered, Bishop's routing is wired, and an immediate preview fire runs on install — but nothing commits externally. Dave sees the same email/iMessage he'd see in production minus the writes. He replies "go" → Bishop flips one gate → next fire is fully live.
+
+**Why this shape:** the build's three-fires harness validates the skill works *in worker context*. The post-install preview fire validates the *production code path* (cron → agent → script → delivery) end-to-end against real upstream data. Catching wiring bugs there is much cheaper than at 9 AM Sunday. Manual hand-install is friction without value — by the time Dave is reading SETUP.md, he's already reviewed BUILD-SUMMARY.md and seen the harness real-fire output.
+
+**Skills with no risky external writes** (e.g., a paddle-board alert that only sends an iMessage — the iMessage *is* the desired side effect, harness real-fire already exercised it) skip the preview/live distinction and install directly to live.
+
+**The write-gate mechanism is per-skill** — pick a CLI flag (`--no-apply`), config key (`apply_writes: false`), or env var. The pipeline defaults to gated. Live mode means the gate is removed (cron entry edited to drop the flag, config key flipped, etc.). Pick the simplest one that makes the gate visible at the cron-entry level so Dave can audit "is this skill live?" by reading `cron/jobs.json` alone.
+
+**The install ships three scripts** (one for non-write skills):
+- `scripts/install.sh` — registers the schedule (cron / launchd / hook) with the write-gate ON, appends SETUP.md to Bishop's AGENTS.md (if SETUP.md is non-empty), then runs one immediate preview fire. Idempotent — safe to re-run.
+- `scripts/enable-live.sh` — flips the gate from preview to live. (Omit for skills with no write-gate.)
+- `scripts/disable-live.sh` — flips the gate back. Always include as the inverse of enable-live.
+
+**Schedule selection (unchanged):**
 - Recurring tool-using runtime → **launchd** (e.g., job-search). NOT openclaw cron — openclaw's cron path has invariants for the announce/deliver pattern that don't fit a tool-using worker.
 - Recurring announce-pattern alert → **openclaw cron** in `~/.openclaw/cron/jobs.json` (e.g., medication reminders). See `alert-circuit` for the canonical pattern.
 - Hook-driven (gmail, etc.) → openclaw hooks. See `alert-circuit/EXAMPLES.md`.
 
-**Contract:** schedule is loaded and the next firing time is in the build summary.
+**Worker's role:** writes `install.sh`, `enable-live.sh`, `disable-live.sh`, and `SETUP.md` into the skill directory. **Does not run them** — `tools.fs.workspaceOnly: true` prevents the worker from reaching `~/.openclaw/cron/jobs.json` or Bishop's AGENTS.md anyway. Worker exits cleanly with the announce.
+
+**Bishop's role (post-announce, automatic):**
+1. Run `bash ~/.openclaw/workspace/skills/<name>/scripts/install.sh`. The script handles schedule registration, AGENTS.md append, and the preview fire.
+2. Read the preview fire's log (`logs/run-*.jsonl` newest) to confirm it ran clean.
+3. Report to Dave: "Skill built and installed in preview mode. Preview fire just ran — check your email/iMessage. Reply 'go' when ready to enable live mode." (Or, for non-write skills: "Skill built and installed live. First scheduled fire is `<datetime>`.")
+
+**Dave's role:** review the preview email/iMessage. If it looks right, reply "go." Bishop runs `enable-live.sh`. Done.
+
+**Contract:**
+- Schedule is loaded; next firing time is in the build summary.
+- For write-gated skills: preview fire's external output equals production output minus the write hops; one gate-flip script enables live; one inverse script rolls back.
+- For non-write skills: install is direct-to-live; no gate scripts needed.
+
+---
+
+### Why "preview" is not "mock"
+
+The preview fire is **not** a mocked run. It hits real upstream APIs, makes real LLM calls, sends real email/iMessage to Dave. The only thing it doesn't do is the *external write* (YNAB PATCH, etc.). Spec authors should call this out as "preview, write-disabled" — calling it "mock" oversells the safety; the only safety boundary is the write-gate. Everything reachable to a live run *is* reachable to the preview except the gated hop.
 
 ### Step 8 — Report back
 

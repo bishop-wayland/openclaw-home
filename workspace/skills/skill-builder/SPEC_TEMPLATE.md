@@ -182,17 +182,48 @@ When this spec is handed to the skills-agent (a registered OpenClaw sub-agent at
 3. Execute the build per `METHODOLOGY.md` step sequence, scaffolding into `./skills/<skill-name>/`.
 4. Stop-and-ask on any architectural ambiguity not resolved here: write `./skills/<skill-name>/QUESTION.md`, then emit a final assistant text describing the question. The OpenClaw runtime announce delivers your final text to Bishop's session; Dave answers via iMessage; Bishop dispatches a fresh worker with the answer in the new task.
 5. Write the build summary to `./skills/<skill-name>/BUILD-SUMMARY.md` per methodology Step 8.
-6. **Output handoff:** copy the completed skill from your workspace to Bishop's via `exec`:
+6. Write the install scripts and SETUP.md per the **Install phase** subsection below.
+7. **Output handoff:** copy the completed skill from your workspace to Bishop's via `exec`:
    ```bash
    cp -r ./skills/<skill-name>/ /Users/bishop/.openclaw/workspace/skills/<skill-name>/
    ```
-7. Emit a final assistant text — substantive build report. The runtime announce auto-posts it to Bishop's session. **Never end with `ANNOUNCE_SKIP`, `NO_REPLY`, or `no_reply`** — those tokens suppress the announce.
+8. Emit a final assistant text — substantive build report. The runtime announce auto-posts it to Bishop's session. **Never end with `ANNOUNCE_SKIP`, `NO_REPLY`, or `no_reply`** — those tokens suppress the announce.
 
 **Build identity:** `skill-build-<skill-name>-<YYYYMMDD>-<HHMM>`
 
 **Skill destination (after handoff):** `~/.openclaw/workspace/skills/<skill-name>/`
 
 **Source location during build:** `~/.openclaw/workspace-skills-agent/skills/<skill-name>/`
+
+### Install phase (the worker writes; Bishop runs)
+
+Per METHODOLOGY Step 7, the build flows automatically into install with a write-disabled preview. Specify here:
+
+- **Has external writes beyond Dave's inbox:** `<YES | NO>` (YNAB PATCH, third-party API state, shared file writes outside the skill = YES. iMessage / email to Dave only = NO.)
+- **Write-gate mechanism:** `<--no-apply CLI flag | config.json apply_writes:false | env var SKILL_LIVE=0>` — pick one, document the default-gated state. Prefer a mechanism visible at the cron-entry level so Dave can audit "is this skill live?" from `cron/jobs.json` alone.
+- **Schedule registration target:** `<~/.openclaw/cron/jobs.json | launchd plist at ~/Library/LaunchAgents/com.bishop.<name>.plist | hook config>`
+
+The worker writes:
+
+| File | Purpose |
+|---|---|
+| `scripts/install.sh` | Registers schedule with write-gate ON, appends `SETUP.md` to Bishop's AGENTS.md (if non-empty), runs one immediate preview fire. Idempotent. |
+| `scripts/enable-live.sh` | Flips the gate from preview to live. **Omit if "Has external writes" is NO.** |
+| `scripts/disable-live.sh` | Inverse of enable-live. **Omit if "Has external writes" is NO.** |
+| `SETUP.md` | Bishop-side routing snippet (approval-reply detection, etc.). Empty/skipped if the skill needs no Bishop behavior beyond firing the cron. |
+
+After the worker emits the announce with SUCCESS, **Bishop** (per Bishop's AGENTS.md "Post-build install protocol"):
+1. Runs `bash ~/.openclaw/workspace/skills/<name>/scripts/install.sh`
+2. Reads the preview fire's log to confirm clean run
+3. Reports to Dave with the preview output and the "Reply 'go'" prompt
+
+When Dave replies "go" → Bishop runs `enable-live.sh`. Done.
+
+For skills with no external writes: `install.sh` installs directly to live, no `enable-live.sh` / `disable-live.sh` needed.
+
+**Worker forbidden actions** (still):
+- Don't *run* `install.sh` from the worker. `tools.fs.workspaceOnly` blocks the cron/AGENTS.md edits anyway.
+- Don't pre-flip the live gate. The default-gated state is load-bearing.
 
 ---
 

@@ -177,6 +177,19 @@ When Dave hands you a path to a skill spec at `~/.openclaw/specs/<name>.md` (or 
 
 **On the announce.** When the worker finishes, the OpenClaw runtime auto-posts an announce to your session as a follow-up agent turn. Status is runtime-derived (`success` / `error` / `timeout` / `unknown`), Result content is the worker's latest visible assistant text. Internal metadata is for your orchestration only — rewrite for Dave in your own assistant voice; don't forward raw announce metadata to him verbatim.
 
+**Post-build install protocol (automatic on announce SUCCESS).** Per the skill-builder methodology Step 7, every skill build flows automatically through install. When the announce comes back as SUCCESS, before relaying anything to Dave:
+
+1. **Verify the install scripts exist.** Check for `~/.openclaw/workspace/skills/<name>/scripts/install.sh`. If not present, the worker didn't follow the methodology — surface this to Dave as a build defect, don't paper over it.
+2. **Run the install script:** `bash ~/.openclaw/workspace/skills/<name>/scripts/install.sh`. This script is idempotent and handles three things: (a) registers the schedule (cron / launchd / hook) with the write-gate ON, (b) appends `SETUP.md` content to your own `~/.openclaw/workspace/AGENTS.md` if SETUP.md is non-empty and the section isn't already there, (c) triggers one immediate preview fire so Dave gets to see the production-equivalent output.
+3. **Read the preview fire's log** at `~/.openclaw/workspace/skills/<name>/logs/run-*.jsonl` (newest). Confirm `done` event with `exit_status: success`. If the preview fire failed, surface that to Dave instead of falsely reporting success.
+4. **Relay to Dave.** For skills with a write-gate (preview mode): "Skill built and installed in preview mode. Preview fire just ran — you should have the email/iMessage. Reply 'go' to enable live mode (or 'rollback' to disable)." For skills without a write-gate: "Skill built and installed live. Next scheduled fire is `<datetime>`."
+
+**On Dave's "go" reply (or equivalent affirmation):** run `bash ~/.openclaw/workspace/skills/<name>/scripts/enable-live.sh`. Confirm: "Live mode enabled. Next scheduled fire commits real writes."
+
+**On Dave's "rollback" reply (or equivalent retreat):** run `bash ~/.openclaw/workspace/skills/<name>/scripts/disable-live.sh`. Confirm: "Live mode disabled, back to preview."
+
+**Match against existing live state before flipping.** If Dave says "go" and the skill is already live (cron entry already lacks the write-gate flag), don't run enable-live.sh — tell him "already live, no change."
+
 **Don't load the skill-builder skill yourself for execution.** Loading it for context (answering Dave "what's the methodology?") is fine. The worker loads it from its own workspace at dispatch time.
 
 **One concurrent skills-agent build at a time.** If Dave asks for a second build while one is running, hold the request and tell him.
@@ -199,3 +212,42 @@ Long-running sub-agent dispatches MUST be tracked in `~/.openclaw/workspace/memo
 - If the worker is still running after 30+ minutes for a build that should be quick, that's a stall — also surface.
 
 **On resolution** (Dave acknowledges or moves on): delete the entry. Don't let the file grow indefinitely.
+
+## YNAB Approval Routing
+
+When the `ynab-categorize` skill fires on Sunday mornings, it sends Dave:
+1. An email digest with auto-categorized, pending-approval, and manual-review sections
+2. An iMessage with a summary and approval prompts for new merchants
+
+If Dave replies via iMessage with an approval-shaped message, you (Bishop) should detect it and trigger the approval handler.
+
+### Detect
+
+Dave's iMessage reply matches if it contains the word `approve` (case-insensitive) AND references a YNAB run-id. The run-id is embedded in both the email and iMessage you sent.
+
+Examples:
+- "approve"
+- "approve, but change Zona Rosa to Gifts"
+- "approve all except Hola House"
+
+### On Match
+
+1. Find the most recent pending file: `ls -t ~/.openclaw/workspace/skills/ynab-categorize/state/pending-*.json | head -1`
+2. Extract the run-id from the filename (format: `pending-<run-id>.json`)
+3. Call: `python3 ~/.openclaw/workspace/skills/ynab-categorize/scripts/apply-additions.py --run-id <run-id> --message "<Dave's reply text>"`
+
+The script will:
+- Parse Dave's reply (handles "approve", "change X to Y", "approve all except Y")
+- Append new merchants to `~/.openclaw/workspace/skills/ynab-categorize/state/merchant-lookup.json`
+- Send Dave a confirmation iMessage with the diff
+- Exit cleanly (always succeeds; failures surface to Dave for manual correction)
+
+### On No-Match
+
+Treat the reply as normal conversation. Respond as appropriate.
+
+### Important Notes
+
+- **Safe regardless of live/preview state:** The approval routing only writes to `merchant-lookup.json` (the curated truth table), never to YNAB. It's harmless to approve pending merchants even if the cron is in preview mode (--no-apply).
+- **Don't auto-retry:** If `apply-additions.py` fails (e.g., malformed reply, file not found), surface the error to Dave and ask what he wants. Don't silently re-run.
+- **Approval text is Dave's:** The exact wording of "change X to Y" is Dave's choice. The parser is lenient and handles common phrasings.

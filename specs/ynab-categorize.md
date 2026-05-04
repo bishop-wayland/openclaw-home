@@ -298,31 +298,34 @@ Bishop copies these into the worker's workspace at dispatch time. Worker sees th
 2. Read `./spec.md` (this spec) in full.
 3. Execute the build per `METHODOLOGY.md` step sequence, scaffolding into `./skills/ynab-categorize/`.
 4. Pull the seed lookup table into the new skill: `cp ./merchant-lookup.json ./skills/ynab-categorize/state/merchant-lookup.json`. **Do NOT run init-lookup.py during the build** — the seed copy is the initialization. The init script ships in the skill but is invoked by Dave manually if he ever wants to wipe and rebuild.
-5. **Do NOT install the cron schedule.** Write `scripts/install-cron.sh` as a one-shot installer (mirror `paddle-board-alert/scripts/install-cron.sh` shape). Dave will run it manually after reviewing the build.
-6. Run the three-fires harness per METHODOLOGY §"Three-fires harness". Real-fire deliveries (email digest + iMessage summary) MUST be marked `[TEST FIRE]` in subject/body with a `(skill harness, ignore)` tail per METHODOLOGY Fix B.
+5. Run the three-fires harness per METHODOLOGY §"Three-fires harness". Real-fire deliveries (email digest + iMessage summary) MUST be marked `[TEST FIRE]` in subject/body with a `(skill harness, ignore)` tail per METHODOLOGY Fix B.
+6. Write the install scripts and SETUP.md per the **Install phase** subsection below. **Do NOT run them** — Bishop runs `install.sh` post-announce per the methodology.
 7. **Output handoff:** copy the completed skill from your workspace to Bishop's:
    ```bash
    cp -r ./skills/ynab-categorize/ /Users/bishop/.openclaw/workspace/skills/ynab-categorize/
    ```
 8. Write `./skills/ynab-categorize/BUILD-SUMMARY.md` (also handed off via the cp above) per METHODOLOGY Step 8.
-9. **Write `./skills/ynab-categorize/SETUP.md`** containing the YNAB Approval Routing snippet (see below). This is the manual post-build step Dave applies to Bishop's `~/.openclaw/workspace/AGENTS.md` after reviewing the build.
-10. Emit a substantive final assistant text — the OpenClaw runtime announce auto-delivers it to Bishop's session. Reference the SETUP.md path so Bishop can relay it to Dave. **Do NOT call `openclaw message send`** — runtime handles delivery; the `message` tool is denied for this agent anyway.
+9. Emit a substantive final assistant text — the OpenClaw runtime announce auto-delivers it to Bishop's session. Reference that the install scripts are in place and Bishop should run `install.sh`. **Do NOT call `openclaw message send`** — runtime handles delivery; the `message` tool is denied for this agent anyway.
 
-### Forbidden
+### Install phase
 
-- `ANNOUNCE_SKIP`, `NO_REPLY`, or `no_reply` as final assistant text — these tokens suppress the announce.
-- Any modification to Bishop's `~/.openclaw/workspace/AGENTS.md`, `cron/jobs.json`, or top-level openclaw config. The YNAB Approval Routing section is delivered via `SETUP.md` for Dave to apply manually.
-- Running a real fire before three consecutive clean dry fires.
+This skill **has external writes** (YNAB PATCH calls in Hop 7 `apply_known`). The methodology requires installation in preview mode behind a write-gate, with one explicit "go" from Dave to flip live.
 
-### `SETUP.md` content (worker writes this verbatim)
+- **Write-gate mechanism:** the `--no-apply` CLI flag, baked into the cron entry's payload command. The default-gated state is `python3 propose.py --no-apply`. Live mode strips the flag → `python3 propose.py`. Visible at the cron-entry level so Dave can audit `cron/jobs.json` to confirm state.
+- **Schedule registration target:** `~/.openclaw/cron/jobs.json` (openclaw cron, since this is a script-runtime fire matching the paddle-board-alert pattern).
+
+**Scripts the worker writes:**
+
+| File | Behavior |
+|---|---|
+| `scripts/install.sh` | Idempotent. (1) Adds an entry to `~/.openclaw/cron/jobs.json` with `name: "ynab-categorize"`, `schedule: "0 9 * * 0 America/Los_Angeles"`, `payload.kind: agentTurn`, `payload.tools: ["exec"]`, agent invokes `python3 ~/.openclaw/workspace/skills/ynab-categorize/scripts/propose.py --no-apply`. If the entry already exists, replace it. (2) If `~/.openclaw/workspace/skills/ynab-categorize/SETUP.md` is non-empty and the section it contains is not yet in `~/.openclaw/workspace/AGENTS.md`, append it. (3) Run one preview fire: `python3 ~/.openclaw/workspace/skills/ynab-categorize/scripts/propose.py --no-apply` and capture exit code. Print clear "Preview fire ran, exit=N, log at <path>" so Bishop can relay to Dave. |
+| `scripts/enable-live.sh` | Reads `~/.openclaw/cron/jobs.json`, finds the `ynab-categorize` entry, removes the trailing `--no-apply` argument from the payload command. Writes back atomically. Confirms the change with a diff-like summary. |
+| `scripts/disable-live.sh` | Inverse: re-adds `--no-apply` to the cron entry's payload command. For rollback. |
+| `SETUP.md` | The YNAB Approval Routing snippet below. `install.sh` appends it to Bishop's AGENTS.md. |
+
+**`SETUP.md` content (worker writes this verbatim):**
 
 ```markdown
-# Post-build setup for ynab-categorize
-
-After Dave reviews the build and is ready to enable approval routing, add the following section to `~/.openclaw/workspace/AGENTS.md`, after the existing "Skills-Agent Dispatch" / "Active Dispatches" sections.
-
----
-
 ## YNAB Approval Routing
 
 Sundays after 9 AM PT, the `ynab-categorize` skill fires its weekly cron and sends Dave both an email digest and an iMessage with new-merchant approval prompts. When Dave replies via iMessage, you (Bishop) detect the approval-shaped reply and trigger the apply-additions step.
@@ -337,12 +340,19 @@ Sundays after 9 AM PT, the `ynab-categorize` skill fires its weekly cron and sen
 
 **On no-match:** treat the reply as conversational; respond normally.
 
-**Don't:** auto-retry on failure (e.g., script error, malformed reply). Surface the error to Dave and ask what he wants.
-
----
-
-After adding the section, restart the gateway: `openclaw gateway restart`. Then the next Sunday cron fire will deliver the digest with approval prompts, and Dave's iMessage replies will route through this section.
+**Don't:** auto-retry on failure (e.g., script error, malformed reply). Surface the error to Dave and ask what he wants. Note that `apply-additions.py` only writes to `merchant-lookup.json` (curated truth-table) — never to YNAB. Approval routing is benign regardless of the live/preview state of the cron entry.
 ```
+
+**Bishop runs (post-announce):** `bash ~/.openclaw/workspace/skills/ynab-categorize/scripts/install.sh` per Bishop's "Post-build install protocol" in his AGENTS.md. The script handles cron registration, AGENTS.md append, and triggers the preview fire. Bishop then reports to Dave: "Skill installed in preview mode. Preview fire just ran — check your email/iMessage. Reply 'go' when ready to enable live mode."
+
+**Dave's "go" → Bishop runs `enable-live.sh`.** From that point, the next Sunday cron fire commits real YNAB writes.
+
+### Forbidden (worker)
+
+- `ANNOUNCE_SKIP`, `NO_REPLY`, or `no_reply` as final assistant text — these tokens suppress the announce.
+- Running `install.sh`, `enable-live.sh`, or `disable-live.sh` from worker context. (You write them; Bishop runs `install.sh`; Dave's "go" triggers Bishop running `enable-live.sh`.)
+- Any direct modification to Bishop's `~/.openclaw/workspace/AGENTS.md`, `cron/jobs.json`, or top-level openclaw config. (Even via `exec`. The install scripts are how those changes happen, and Bishop runs them.)
+- Running a real fire before three consecutive clean dry fires.
 
 ### Composition reuse priority
 
@@ -376,5 +386,8 @@ The worker should NOT copy `ynab-autocategorize.py`'s RULES list or SKIP_PATTERN
 - Dave has been hand-curating `merchant-lookup.json` for several weeks via his earlier scripts. The 343 entries it currently contains are GOOD — they reflect Dave's actual categorization preferences. Treat the seed file as authoritative ground truth for the initial state.
 - The two existing scripts (`ynab-autocategorize.py` and `ynab_classifier.py`) represent two different design philosophies. The skill takes the better parts of each: from `ynab-autocategorize.py` keep the auth + YNAB client + categories-by-name build + dry-run/apply pattern; from `ynab_classifier.py` keep the lookup logic (Stage 1) + payee cleaning + web enrichment (Stage 4) + LLM arbitration (Stage 5). The regex rules from `ynab-autocategorize.py` and the recurring-detection from `ynab_classifier.py` are explicitly dropped.
 - This is the first skill to compose with `gog` for outbound email. The agent should read `job-search/scripts/deliver.py` carefully — that's the validated reference for sending HTML email via gog with proper auth fetching.
-- After dispatch, the worker reports back to Bishop via the OpenClaw runtime announce mechanism (push-based, runtime-derived Status). Bishop relays the announce body to Dave in his own voice. Dave should expect during the build: (a) one `[TEST FIRE]` iMessage from the harness real fire (sample digest content, sample run_id), (b) one `[TEST FIRE]` email from the harness real fire (same), (c) one Bishop iMessage relaying the build's completion summary. Total: 2 messages from the skill (harness real fire) + 1 from Bishop (announce relay). Production cron runs from the installed skill are separate and unmarked.
+- After dispatch, the worker reports back to Bishop via the OpenClaw runtime announce mechanism (push-based, runtime-derived Status). Bishop runs `install.sh` post-announce per his AGENTS.md "Post-build install protocol," which registers the cron in **preview mode** (`--no-apply` baked into the payload), appends SETUP.md to his AGENTS.md, and triggers one immediate preview fire. Bishop then relays to Dave with the "Reply 'go' to enable live mode" prompt.
+- Dave should expect during the build + install: (a) one `[TEST FIRE]` iMessage from the harness real fire (sample digest content, sample run_id, no-apply), (b) one `[TEST FIRE]` email from the harness real fire (same), (c) one preview email digest from the post-install preview fire (real recent transactions, real proposed categories, no `[TEST FIRE]` marker since this is the production code path), (d) one preview iMessage with new-merchant approval prompts (same), (e) one Bishop iMessage relaying the build summary + the "Reply 'go'" prompt. Total: ~5 messages.
+- The "go" → live transition: Dave replies "go" → Bishop runs `enable-live.sh` → next Sunday's cron fire commits real YNAB writes. Rollback at any time: Dave says "rollback" → Bishop runs `disable-live.sh`.
+- Approval routing (SETUP.md content) goes in unguarded by the live/preview gate because it only writes to `merchant-lookup.json` (curated truth-table), never to YNAB. Dave can reply "approve" to the preview fire's new-merchant prompts and seed the lookup before going live.
 - The build cost (worker tokens) should be ~$1-3 — comparable to job-search Phase 1+2 build. The skill itself runs at ~$0.005/run in production.
