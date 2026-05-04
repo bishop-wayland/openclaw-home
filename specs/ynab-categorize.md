@@ -276,22 +276,53 @@ After harness PASS, Dave manually runs `python3 propose.py` once (no flags) to v
 
 ## 13. Dispatch instructions for the skills-agent
 
-When this spec is handed to the skills-agent, the worker should:
+This skill is built by the registered OpenClaw `skills-agent` sub-agent (per `agents.list[].id: "skills-agent"`). Bishop spawns it via `sessions_spawn(agentId: "skills-agent", task: ...)`. The worker runs in its own workspace at `~/.openclaw/workspace-skills-agent/` with `tools.fs.workspaceOnly: true` enforcing path containment.
 
-1. Load `~/.openclaw/workspace/skills/skill-builder/SKILL.md` and the docs it points to.
-2. Read this spec in full.
-3. Execute the build per `METHODOLOGY.md` step sequence.
-4. Stop-and-ask on any architectural ambiguity not resolved here. The agent is allowed to make ONE edit outside the skill directory: adding a "YNAB Approval Routing" subsection to `~/.openclaw/workspace/AGENTS.md` (see "Bishop's AGENTS.md edit" below). Any other edits to AGENTS.md or top-level config are stop-and-ask.
-5. **Do NOT install the cron schedule.** Write `scripts/install-cron.sh` as a one-shot installer (mirror `paddle-board-alert/scripts/install-cron.sh` shape), but Dave will run it manually after reviewing the build.
-6. **Do NOT run init-lookup.py during the build.** The existing `~/.openclaw/workspace/merchant-lookup.json` (343 entries) is the seed; copy it to `state/merchant-lookup.json` as part of scaffolding. The init script ships in the skill but is run by Dave when he wants to wipe and rebuild.
-7. Write a build summary to `/tmp/skill-build-<id>/summary.md` per methodology Step 8.
-8. Notify Dave directly via `openclaw message send` when done (or stuck or failed). Bishop is bookkeeper.
+### What Bishop pre-stages (before spawning)
 
-### Bishop's AGENTS.md edit (the one allowed external edit)
+Bishop copies these into the worker's workspace at dispatch time. Worker sees them at `./<filename>` relative to its workspace root.
 
-Add a section to `~/.openclaw/workspace/AGENTS.md` after the existing "Skills-Agent Dispatch" section, with this content (the agent should write it verbatim):
+| Source | Worker-side path | Reason |
+|---|---|---|
+| `~/.openclaw/workspace/skills/skill-builder/*` | `./skill-builder/` | Methodology pack — worker reads SKILL.md, METHODOLOGY.md, DECISION_POINTS.md as Step 1 |
+| `~/.openclaw/specs/ynab-categorize.md` | `./spec.md` | This spec |
+| `~/.openclaw/workspace/merchant-lookup.json` | `./merchant-lookup.json` | The 343-entry seed table per §3 "Composes with" — worker uses this as `./state/merchant-lookup.json` in the skill it builds |
+| `~/.openclaw/workspace/skills/job-search/scripts/{logger.py, deliver.py, test.py}` | `./compose-refs/job-search/scripts/{...}` | Reference patterns the worker reads for compose-first reuse |
+| `~/.openclaw/workspace/skills/paddle-board-alert/scripts/deliver.py` | `./compose-refs/paddle-board-alert/scripts/deliver.py` | BB iMessage send pattern reference |
+| `~/.openclaw/workspace/ynab_classifier.py` and `~/.openclaw/workspace/ynab-autocategorize.py` | `./compose-refs/ynab_classifier.py` and `./compose-refs/ynab-autocategorize.py` | Adaptation sources per "Composition reuse priority" below |
+| `~/.openclaw/workspace/build-merchant-lookup.py` | `./compose-refs/build-merchant-lookup.py` | Becomes `scripts/init-lookup.py` with light polish |
+
+### What the worker does
+
+1. Read `./skill-builder/SKILL.md` and the docs it points to (METHODOLOGY.md, DECISION_POINTS.md).
+2. Read `./spec.md` (this spec) in full.
+3. Execute the build per `METHODOLOGY.md` step sequence, scaffolding into `./skills/ynab-categorize/`.
+4. Pull the seed lookup table into the new skill: `cp ./merchant-lookup.json ./skills/ynab-categorize/state/merchant-lookup.json`. **Do NOT run init-lookup.py during the build** — the seed copy is the initialization. The init script ships in the skill but is invoked by Dave manually if he ever wants to wipe and rebuild.
+5. **Do NOT install the cron schedule.** Write `scripts/install-cron.sh` as a one-shot installer (mirror `paddle-board-alert/scripts/install-cron.sh` shape). Dave will run it manually after reviewing the build.
+6. Run the three-fires harness per METHODOLOGY §"Three-fires harness". Real-fire deliveries (email digest + iMessage summary) MUST be marked `[TEST FIRE]` in subject/body with a `(skill harness, ignore)` tail per METHODOLOGY Fix B.
+7. **Output handoff:** copy the completed skill from your workspace to Bishop's:
+   ```bash
+   cp -r ./skills/ynab-categorize/ /Users/bishop/.openclaw/workspace/skills/ynab-categorize/
+   ```
+8. Write `./skills/ynab-categorize/BUILD-SUMMARY.md` (also handed off via the cp above) per METHODOLOGY Step 8.
+9. **Write `./skills/ynab-categorize/SETUP.md`** containing the YNAB Approval Routing snippet (see below). This is the manual post-build step Dave applies to Bishop's `~/.openclaw/workspace/AGENTS.md` after reviewing the build.
+10. Emit a substantive final assistant text — the OpenClaw runtime announce auto-delivers it to Bishop's session. Reference the SETUP.md path so Bishop can relay it to Dave. **Do NOT call `openclaw message send`** — runtime handles delivery; the `message` tool is denied for this agent anyway.
+
+### Forbidden
+
+- `ANNOUNCE_SKIP`, `NO_REPLY`, or `no_reply` as final assistant text — these tokens suppress the announce.
+- Any modification to Bishop's `~/.openclaw/workspace/AGENTS.md`, `cron/jobs.json`, or top-level openclaw config. The YNAB Approval Routing section is delivered via `SETUP.md` for Dave to apply manually.
+- Running a real fire before three consecutive clean dry fires.
+
+### `SETUP.md` content (worker writes this verbatim)
 
 ```markdown
+# Post-build setup for ynab-categorize
+
+After Dave reviews the build and is ready to enable approval routing, add the following section to `~/.openclaw/workspace/AGENTS.md`, after the existing "Skills-Agent Dispatch" / "Active Dispatches" sections.
+
+---
+
 ## YNAB Approval Routing
 
 Sundays after 9 AM PT, the `ynab-categorize` skill fires its weekly cron and sends Dave both an email digest and an iMessage with new-merchant approval prompts. When Dave replies via iMessage, you (Bishop) detect the approval-shaped reply and trigger the apply-additions step.
@@ -307,21 +338,36 @@ Sundays after 9 AM PT, the `ynab-categorize` skill fires its weekly cron and sen
 **On no-match:** treat the reply as conversational; respond normally.
 
 **Don't:** auto-retry on failure (e.g., script error, malformed reply). Surface the error to Dave and ask what he wants.
+
+---
+
+After adding the section, restart the gateway: `openclaw gateway restart`. Then the next Sunday cron fire will deliver the digest with approval prompts, and Dave's iMessage replies will route through this section.
 ```
 
-**Build identity:** `skill-build-ynab-categorize-<YYYYMMDD>-<HHMM>`
+### Composition reuse priority
 
-**Skill destination:** `~/.openclaw/workspace/skills/ynab-categorize/`
+The worker should read these (in `./compose-refs/`) before scaffolding any module:
 
-**Composition reuse priority:** before scaffolding any module, the agent must read in order:
-1. `~/.openclaw/workspace/skills/job-search/scripts/logger.py` and `scripts/test.py` (logging convention + harness shape)
-2. `~/.openclaw/workspace/skills/job-search/scripts/deliver.py` (gog email send pattern)
-3. `~/.openclaw/workspace/skills/paddle-board-alert/scripts/deliver.py` (BB iMessage send pattern; structurally simpler than alert-circuit's announce path)
-4. `~/.openclaw/workspace/ynab_classifier.py` (Stages 1, 4, 5 — copy-and-adapt the lookup, web enrichment, and LLM logic; drop Stages 2 and 3)
-5. `~/.openclaw/workspace/ynab-autocategorize.py` (auth pattern, YNAB GET/PATCH client, the `categories_by_name` build — keep these; drop the RULES list and SKIP_PATTERNS list per the architecture decisions in Section 5)
-6. `~/.openclaw/workspace/build-merchant-lookup.py` (becomes `scripts/init-lookup.py` with light polish)
+1. `./compose-refs/job-search/scripts/logger.py` and `test.py` — logging convention + harness shape
+2. `./compose-refs/job-search/scripts/deliver.py` — gog email send pattern
+3. `./compose-refs/paddle-board-alert/scripts/deliver.py` — BB iMessage send pattern (structurally simpler than alert-circuit's announce path)
+4. `./compose-refs/ynab_classifier.py` (Stages 1, 4, 5 — copy-and-adapt the lookup, web enrichment, and LLM logic; **drop** Stages 2 and 3)
+5. `./compose-refs/ynab-autocategorize.py` — auth pattern, YNAB GET/PATCH client, the `categories_by_name` build (keep these; **drop** the RULES list and SKIP_PATTERNS list per Section 5)
+6. `./compose-refs/build-merchant-lookup.py` — becomes `scripts/init-lookup.py` with light polish
 
-The agent should NOT copy `ynab-autocategorize.py`'s RULES list or SKIP_PATTERNS list. Those are explicitly removed from the architecture per Section 5.
+The worker should NOT copy `ynab-autocategorize.py`'s RULES list or SKIP_PATTERNS list — those are explicitly removed from the architecture per Section 5.
+
+### Build identity
+
+`skill-build-ynab-categorize-<YYYYMMDD>-<HHMM>` (Bishop generates at dispatch time).
+
+### Skill destination (post-handoff)
+
+`~/.openclaw/workspace/skills/ynab-categorize/`
+
+### Source location during build
+
+`~/.openclaw/workspace-skills-agent/skills/ynab-categorize/` — this is where the worker scaffolds before the exec-copy handoff.
 
 ---
 
@@ -330,5 +376,5 @@ The agent should NOT copy `ynab-autocategorize.py`'s RULES list or SKIP_PATTERNS
 - Dave has been hand-curating `merchant-lookup.json` for several weeks via his earlier scripts. The 343 entries it currently contains are GOOD — they reflect Dave's actual categorization preferences. Treat the seed file as authoritative ground truth for the initial state.
 - The two existing scripts (`ynab-autocategorize.py` and `ynab_classifier.py`) represent two different design philosophies. The skill takes the better parts of each: from `ynab-autocategorize.py` keep the auth + YNAB client + categories-by-name build + dry-run/apply pattern; from `ynab_classifier.py` keep the lookup logic (Stage 1) + payee cleaning + web enrichment (Stage 4) + LLM arbitration (Stage 5). The regex rules from `ynab-autocategorize.py` and the recurring-detection from `ynab_classifier.py` are explicitly dropped.
 - This is the first skill to compose with `gog` for outbound email. The agent should read `job-search/scripts/deliver.py` carefully — that's the validated reference for sending HTML email via gog with proper auth fetching.
-- After dispatch, the worker will iMessage Dave directly when done. Dave should expect: (a) one iMessage from the harness real fire (sample digest content with sample run_id, deliberately marked "TEST FIRE"), (b) one email from the harness real fire (same), (c) one completion notification from the worker confirming build done. Total: 2 iMessages + 1 email during the build itself. Production runs from cron will be separate.
+- After dispatch, the worker reports back to Bishop via the OpenClaw runtime announce mechanism (push-based, runtime-derived Status). Bishop relays the announce body to Dave in his own voice. Dave should expect during the build: (a) one `[TEST FIRE]` iMessage from the harness real fire (sample digest content, sample run_id), (b) one `[TEST FIRE]` email from the harness real fire (same), (c) one Bishop iMessage relaying the build's completion summary. Total: 2 messages from the skill (harness real fire) + 1 from Bishop (announce relay). Production cron runs from the installed skill are separate and unmarked.
 - The build cost (worker tokens) should be ~$1-3 — comparable to job-search Phase 1+2 build. The skill itself runs at ~$0.005/run in production.
