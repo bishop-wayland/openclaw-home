@@ -22,7 +22,11 @@ plugins/
 subagents/
 
 # Session conversation logs and agent runtime state (all agents)
-agents/
+# Use agents/* + !exception form so the agents/skills-agent/ doc-only
+# dispatch contract can be re-included; git can't re-include children of
+# a fully-excluded parent directory.
+agents/*
+!agents/skills-agent/
 
 
 # SQLite runtime databases

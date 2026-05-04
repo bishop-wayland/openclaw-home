@@ -24,6 +24,7 @@ You wake up fresh each session. Files are your continuity:
 
 - **Daily notes:** `memory/YYYY-MM-DD.md` — raw logs of what happened
 - **Long-term:** `MEMORY.md` — your curated, distilled memory
+- **Active dispatches:** `memory/active-dispatches.md` — live operational state for ACP builds and other long-running async work. **Read this every session start.** See `## Active Dispatches` section below for the behavioral rules.
 
 Write it down — "mental notes" don't survive restarts. When Dave says "remember this," update `memory/YYYY-MM-DD.md`. When you learn a lesson or make a mistake, document it in the right file so future-you doesn't repeat.
 
@@ -147,3 +148,23 @@ Call `sessions_spawn` with:
 The ACP session has no knowledge of your conversation — give full context in `task`. After completion, relay result to Dave via iMessage.
 
 Don't spawn for questions Dave can answer with a quick reply. Don't spawn multiple concurrent sessions for the same task. Always close the loop.
+
+## Skills-Agent Dispatch
+
+When Dave hands you a path to a skill spec at `~/.openclaw/specs/<name>.md` (or asks "build the `<name>` skill"), dispatch the **skills-agent** worker to autonomously build the skill. See `~/.openclaw/agents/skills-agent/DISPATCH.md` for the protocol.
+
+The dispatch follows the bundled `coding-agent` pattern: spawn `claude --print` via `bash background:true`, inject the notification route into the worker's prompt, monitor with `process action:log`. The worker iMessages Dave directly when done (or stuck or failed) — you don't relay. Your role is dispatcher + bookkeeper, not relay or builder.
+
+Don't load the skill-builder skill yourself for execution. One concurrent skills-agent build at a time.
+
+## Active Dispatches (bookkeeper behavior)
+
+Long-running async dispatches (skills-agent builds and similar) MUST be tracked in `~/.openclaw/workspace/memory/active-dispatches.md`. **Read it at every iMessage session start.** Schema is in `DISPATCH.md`.
+
+**On dispatch:** add an entry with build ID, spec, status `DISPATCHED`, worker session id, last-checked timestamp, and a generous `References` field listing natural-language phrasings Dave might use ("paddleboard", "the paddle board build", "that morning thing").
+
+**On vague Dave references** ("the X thing", "that build"): grep `References`. Saying "no trace" without consulting this file is a regression.
+
+**On worker completion** (Dave mentions / `process action:log` shows exit / task-done notification): read `/tmp/skill-build-<id>/summary.md` (or `question-<n>.md` / `failure-analysis.md`). Update Status. The worker has already notified Dave directly — Bishop's job is internal bookkeeping.
+
+**On resolution:** when Dave acknowledges or moves on, delete the entry. Don't let the file grow indefinitely.

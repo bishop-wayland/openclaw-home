@@ -1,0 +1,11 @@
+{
+  "tone": "dry-humor",
+  "greeting_template": "Hello, Dave. {tone_clause} Skill-builder smoke test passed at {hhmm} {tz}.",
+  "target_channel": "bluebubbles",
+  "target_recipient": "iMessage;-;otte.dave@gmail.com",
+  "tone_clauses": {
+    "formal": "Greetings.",
+    "casual": "Hey there.",
+    "dry-humor": "Reporting for duty in the most low-stakes possible way."
+  }
+}
