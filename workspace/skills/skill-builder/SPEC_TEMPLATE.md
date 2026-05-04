@@ -163,6 +163,8 @@ Plus skill-specific events:
 - Dry mechanism: `<--dry-send | --no-deliver | --simulate-fetch>` — pick one CLI flag, document what it skips
 - State reset: harness resets dedup state before run #1 so each fire is comparable
 - Real fire is final; if any dry fails, real does NOT run
+- **Real fire MUST exercise the deliver hops.** If this spec lists external side effects in §5 (email, iMessage, Slack post, etc.), the real fire actually invokes them. A harness that only dry-runs is a methodology violation — see METHODOLOGY.md §"Three-fires harness is non-negotiable".
+- **Real-fire deliveries MUST be marked `TEST FIRE`.** Any externally-visible delivery from the harness gets a `[TEST FIRE]` prefix in the subject/body and a `(skill harness, ignore)` tail. Production runs do not have this marker.
 
 ## 12. Known follow-ups / out of scope
 
@@ -173,18 +175,24 @@ What's deliberately not in v1 scope but worth flagging for future work:
 
 ## 13. Dispatch instructions for the skills-agent
 
-When this spec is handed to the skills-agent, the worker (a `claude --print` invocation) should:
+When this spec is handed to the skills-agent (a registered OpenClaw sub-agent at `agents.list[].id: "skills-agent"`), the worker should:
 
-1. Load `~/.openclaw/workspace/skills/skill-builder/SKILL.md` and the docs it points to.
-2. Read this spec in full.
-3. Execute the build per `METHODOLOGY.md` step sequence.
-4. Stop-and-ask on any architectural ambiguity not resolved here: write `/tmp/skill-build-<id>/question-<n>.md` AND send a notification iMessage to Dave via `openclaw message send` using the route injected at dispatch.
-5. Write a build summary to `/tmp/skill-build-<id>/summary.md` per the methodology.
-6. Notify Dave directly via `openclaw message send` when done (or stuck or failed). Bishop is bookkeeper, not relay.
+1. Load `./skill-builder/SKILL.md` and the docs it points to. (Bishop pre-stages the methodology pack into the skills-agent workspace at dispatch.)
+2. Read `./spec.md` in full. (Bishop pre-stages the per-build spec there.)
+3. Execute the build per `METHODOLOGY.md` step sequence, scaffolding into `./skills/<skill-name>/`.
+4. Stop-and-ask on any architectural ambiguity not resolved here: write `./skills/<skill-name>/QUESTION.md`, then emit a final assistant text describing the question. The OpenClaw runtime announce delivers your final text to Bishop's session; Dave answers via iMessage; Bishop dispatches a fresh worker with the answer in the new task.
+5. Write the build summary to `./skills/<skill-name>/BUILD-SUMMARY.md` per methodology Step 8.
+6. **Output handoff:** copy the completed skill from your workspace to Bishop's via `exec`:
+   ```bash
+   cp -r ./skills/<skill-name>/ /Users/bishop/.openclaw/workspace/skills/<skill-name>/
+   ```
+7. Emit a final assistant text — substantive build report. The runtime announce auto-posts it to Bishop's session. **Never end with `ANNOUNCE_SKIP`, `NO_REPLY`, or `no_reply`** — those tokens suppress the announce.
 
 **Build identity:** `skill-build-<skill-name>-<YYYYMMDD>-<HHMM>`
 
-**Skill destination:** `~/.openclaw/workspace/skills/<skill-name>/`
+**Skill destination (after handoff):** `~/.openclaw/workspace/skills/<skill-name>/`
+
+**Source location during build:** `~/.openclaw/workspace-skills-agent/skills/<skill-name>/`
 
 ---
 

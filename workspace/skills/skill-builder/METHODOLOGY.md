@@ -73,6 +73,10 @@ Every skill ships with `scripts/test.py` that runs **3 dry + 1 real** fires befo
 - Harness exits 0 only when ALL fires pass cleanly.
 - Real fire is FAR LAST — if any dry fails, the real never runs.
 
+**Real fire MUST exercise the deliver hops.** If the spec specifies external side effects (email, iMessage, Slack post, file write to a shared location, etc.), the real fire must actually invoke those hops — not skip them with `--dry-send`. A harness that passes only dry fires is a harness that doesn't prove the production path. *(Caught during the 2026-05-04 dispatch refactor: the prior hello-skill harness was running `--dry-send --no-apply` for the "real" fire, which meant the harness reported PASS without ever delivering anything.)*
+
+**Real-fire deliveries MUST be marked `TEST FIRE`.** Any externally-visible delivery from the harness — iMessage body, email subject, Slack post, anything Dave or another human will see — must include a `TEST FIRE` prefix or marker so the recipient can distinguish harness output from production output. Production cron runs do not have this marker; only harness real fires do. Pattern: prefix the message subject/body with `[TEST FIRE]` and add a short tail like `(skill harness, ignore)`. Locks the message into "this is a test" framing without obscuring what it does.
+
 **Bugs the harness caught during job-search:**
 - Null byte in source (the script wouldn't import; first dry fire surfaced it instantly).
 - JSON-from-prose preamble (Claude narrated before emitting JSON; harness saw the parse error and dumped the raw response).

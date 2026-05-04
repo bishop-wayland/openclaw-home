@@ -1,49 +1,40 @@
-"""Per-hop JSONL logger. One line per hop, line-buffered.
+"""JSONL event logger for hello-skill."""
 
-Pattern copied from ~/.openclaw/workspace/skills/paddle-board-alert/scripts/logger.py —
-same shape (run_id, ts, event, fields), same forensic-debug discipline.
-"""
-from __future__ import annotations
-
-import datetime as _dt
 import json
-import sys
+import os
+from datetime import datetime, timezone
 from pathlib import Path
 
-LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 
+class Logger:
+    """Emit per-hop JSONL log lines."""
 
-class RunLogger:
-    def __init__(self, run_id: str | None = None):
-        if run_id is None:
-            run_id = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        self.run_id = run_id
-        LOG_DIR.mkdir(parents=True, exist_ok=True)
-        self.path = LOG_DIR / f"run-{run_id}.jsonl"
-        self._fh = self.path.open("a", buffering=1)
+    def __init__(self, skill_dir):
+        """Initialize logger with skill directory path."""
+        self.skill_dir = Path(skill_dir)
+        self.logs_dir = self.skill_dir / "logs"
+        self.logs_dir.mkdir(parents=True, exist_ok=True)
 
-    def emit(self, event: str, **fields):
-        rec = {
-            "ts": _dt.datetime.now(_dt.timezone.utc).isoformat(),
-            "run_id": self.run_id,
-            "event": event,
+        # Create log file with ISO timestamp
+        now = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        self.log_path = self.logs_dir / f"run-{now}.jsonl"
+
+    def event(self, event_type, **fields):
+        """Log a single event as JSONL."""
+        record = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "event": event_type,
             **fields,
         }
-        line = json.dumps(rec, ensure_ascii=False, default=str)
-        self._fh.write(line + "\n")
-        print(line, file=sys.stderr)
+        with open(self.log_path, "a") as f:
+            f.write(json.dumps(record) + "\n")
 
-    def close(self):
-        try:
-            self._fh.close()
-        except Exception:
-            pass
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc, tb):
-        if exc_type:
-            self.emit("error", exc_type=exc_type.__name__, message=str(exc))
-        self.close()
-        return False
+    def read_log(self):
+        """Read all events from the current log file."""
+        events = []
+        if self.log_path.exists():
+            with open(self.log_path, "r") as f:
+                for line in f:
+                    if line.strip():
+                        events.append(json.loads(line))
+        return events

@@ -32,7 +32,25 @@
       "sandbox": {
         "mode": "off"
       }
-    }
+    },
+    "list": [
+      {
+        "id": "main",
+        "subagents": {
+          "allowAgents": ["skills-agent"]
+        }
+      },
+      {
+        "id": "skills-agent",
+        "name": "skills-agent",
+        "workspace": "/Users/bishop/.openclaw/workspace-skills-agent",
+        "agentDir": "/Users/bishop/.openclaw/agents/skills-agent/agent",
+        "model": "anthropic/claude-haiku-4-5",
+        "tools": {
+          "deny": ["message", "group:automation", "group:ui"]
+        }
+      }
+    ]
   },
   "gateway": {
     "mode": "local",
@@ -149,8 +167,8 @@
     "lastRunMode": "local"
   },
   "meta": {
-    "lastTouchedVersion": "2026.4.12",
-    "lastTouchedAt": "2026-04-17T06:30:50.826Z"
+    "lastTouchedVersion": "2026.4.27",
+    "lastTouchedAt": "2026-05-04T15:48:28.434Z"
   },
   "hooks": {
     "enabled": true,
@@ -190,7 +208,7 @@
         "name": "Refurb Mac mini alert",
         "sessionKey": "hook:refurb-alert:{{messages[0].id}}",
         "model": "anthropic/claude-haiku-4-5",
-        "messageTemplate": "[refurb-alert handled by transform \u2014 agent should not see this]",
+        "messageTemplate": "[refurb-alert handled by transform — agent should not see this]",
         "deliver": false,
         "transform": {
           "module": "refurb-alert.v3.js"
@@ -205,7 +223,7 @@
         "name": "Gmail",
         "sessionKey": "hook:gmail:{{messages[0].id}}",
         "model": "anthropic/claude-haiku-4-5",
-        "messageTemplate": "New email \u2014 triage only. Never deliver anything to Dave directly. Never reply to the sender.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}\n\nAppend exactly one line to /Users/bishop/.openclaw/workspace/memory/inbox-queue.md in this format:\n  - From: <original sender or outer From> | Subject: <subject> | Summary: <1-sentence summary>\nCreate the file if missing. Then output one word: QUEUED.\n\nRefurb-tracker emails are handled by a dedicated short-circuit at /hooks/gmail-alert-refurb \u2014 they do not arrive here. If you see one here by mistake, queue it as above and note 'misrouted' in the summary.",
+        "messageTemplate": "New email — triage only. Never deliver anything to Dave directly. Never reply to the sender.\n\nFrom: {{messages[0].from}}\nSubject: {{messages[0].subject}}\nBody: {{messages[0].body}}\n\nAppend exactly one line to /Users/bishop/.openclaw/workspace/memory/inbox-queue.md in this format:\n  - From: <original sender or outer From> | Subject: <subject> | Summary: <1-sentence summary>\nCreate the file if missing. Then output one word: QUEUED.\n\nRefurb-tracker emails are handled by a dedicated short-circuit at /hooks/gmail-alert-refurb — they do not arrive here. If you see one here by mistake, queue it as above and note 'misrouted' in the summary.",
         "deliver": false
       }
     ],

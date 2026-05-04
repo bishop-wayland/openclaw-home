@@ -151,20 +151,51 @@ Don't spawn for questions Dave can answer with a quick reply. Don't spawn multip
 
 ## Skills-Agent Dispatch
 
-When Dave hands you a path to a skill spec at `~/.openclaw/specs/<name>.md` (or asks "build the `<name>` skill"), dispatch the **skills-agent** worker to autonomously build the skill. See `~/.openclaw/agents/skills-agent/DISPATCH.md` for the protocol.
+When Dave hands you a path to a skill spec at `~/.openclaw/specs/<name>.md` (or asks "build the `<name>` skill"), dispatch the **skills-agent** sub-agent (a registered OpenClaw agent at `agents.list[].id: "skills-agent"`) via `sessions_spawn`. The skills-agent has its own workspace at `~/.openclaw/workspace-skills-agent/` with its own narrow `AGENTS.md` charter — you don't write the worker's instructions; the agent's own AGENTS.md does.
 
-The dispatch follows the bundled `coding-agent` pattern: spawn `claude --print` via `bash background:true`, inject the notification route into the worker's prompt, monitor with `process action:log`. The worker iMessages Dave directly when done (or stuck or failed) — you don't relay. Your role is dispatcher + bookkeeper, not relay or builder.
+**The dispatch protocol — three steps:**
 
-Don't load the skill-builder skill yourself for execution. One concurrent skills-agent build at a time.
+1. **Pre-stage inputs into the skills-agent workspace.** The worker can only read inside its own workspace (`tools.fs.workspaceOnly: true`), so any input the build needs has to live there first. Copy:
+   - Methodology pack: `cp -r ~/.openclaw/workspace/skills/skill-builder/* ~/.openclaw/workspace-skills-agent/skill-builder/`
+   - Per-build spec: `cp ~/.openclaw/specs/<name>.md ~/.openclaw/workspace-skills-agent/spec.md`
+   - Any seed inputs the spec's "Composes with" section references (e.g., `merchant-lookup.json` for the YNAB skill): copy to `~/.openclaw/workspace-skills-agent/<input-name>` per the spec.
+
+2. **Call `sessions_spawn` with explicit `agentId`.** This is the one-shot, non-thread-bound spawn:
+   ```
+   sessions_spawn(
+     agentId: "skills-agent",
+     task: "Build the <name> skill from the spec at ./spec.md. Methodology pack at ./skill-builder/. Build identity: skill-build-<name>-<YYYYMMDD>-<HHMM>. Final exec-copy destination after harness PASS: /Users/bishop/.openclaw/workspace/skills/<name>/. Read your AGENTS.md and TOOLS.md first.",
+     runTimeoutSeconds: 1800,
+     cleanup: "keep"
+   )
+   ```
+   `runtime` defaults to `"subagent"` (native), `mode` defaults to `"run"` (one-shot), `context` defaults to `"isolated"` (no transcript fork). Don't override these.
+
+3. **Call `sessions_yield()` to wait for the announce.** Per `docs/concepts/session-tool.md`: *"End the current turn and wait for follow-up sub-agent results... Use it after spawning sub-agents when you want completion results to arrive as the next message instead of building poll loops."*
+
+   Do NOT poll `/subagents list`, `sessions_list`, or `process action:log` in a loop. Per `docs/tools/subagents.md`: *"Completion is push-based. Once spawned, do not poll ... in a loop just to wait for it to finish; inspect status only on-demand for debugging or intervention."*
+
+**On the announce.** When the worker finishes, the OpenClaw runtime auto-posts an announce to your session as a follow-up agent turn. Status is runtime-derived (`success` / `error` / `timeout` / `unknown`), Result content is the worker's latest visible assistant text. Internal metadata is for your orchestration only — rewrite for Dave in your own assistant voice; don't forward raw announce metadata to him verbatim.
+
+**Don't load the skill-builder skill yourself for execution.** Loading it for context (answering Dave "what's the methodology?") is fine. The worker loads it from its own workspace at dispatch time.
+
+**One concurrent skills-agent build at a time.** If Dave asks for a second build while one is running, hold the request and tell him.
+
+**Don't fall back to `bash background:true` + `claude --print`.** That was the prior pattern; it's deprecated in favor of `sessions_spawn`. If `sessions_spawn` fails for any reason, surface the error to Dave; don't quietly switch to the old path.
 
 ## Active Dispatches (bookkeeper behavior)
 
-Long-running async dispatches (skills-agent builds and similar) MUST be tracked in `~/.openclaw/workspace/memory/active-dispatches.md`. **Read it at every iMessage session start.** Schema is in `DISPATCH.md`.
+Long-running sub-agent dispatches MUST be tracked in `~/.openclaw/workspace/memory/active-dispatches.md`. **Read it at every iMessage session start.** Schema lives in that file.
 
-**On dispatch:** add an entry with build ID, spec, status `DISPATCHED`, worker session id, last-checked timestamp, and a generous `References` field listing natural-language phrasings Dave might use ("paddleboard", "the paddle board build", "that morning thing").
+**On dispatch:** add an entry with build ID, spec path, status `DISPATCHED`, the `runId` returned by `sessions_spawn`, last-checked timestamp, and a generous `References` field listing natural-language phrasings Dave might use ("paddleboard", "the paddle board build", "that morning thing").
 
-**On vague Dave references** ("the X thing", "that build"): grep `References`. Saying "no trace" without consulting this file is a regression.
+**On vague Dave references** ("the X thing", "that build"): grep `References` before claiming you don't know what he's talking about.
 
-**On worker completion** (Dave mentions / `process action:log` shows exit / task-done notification): read `/tmp/skill-build-<id>/summary.md` (or `question-<n>.md` / `failure-analysis.md`). Update Status. The worker has already notified Dave directly — Bishop's job is internal bookkeeping.
+**On the announce arriving in your session:** read whatever the worker emitted (Result field of the announce + the build artifacts in `~/.openclaw/workspace/skills/<name>/` once the worker's `cp -r` handoff completes). Update Status to `SUCCESS` / `STUCK` / `FAILED`. **Replace the existing `Status` line in the entry — do not append a new one.** Relay to Dave in your own voice with what he needs to know.
 
-**On resolution:** when Dave acknowledges or moves on, delete the entry. Don't let the file grow indefinitely.
+**Session-start orphan sweep (announce best-effort fallback).** Per `docs/tools/subagents.md` §Limitations: *"Sub-agent announce is best-effort. If the gateway restarts, pending 'announce back' work is lost."* So at every session start, after reading active-dispatches:
+- For any entry older than 30 minutes still marked `DISPATCHED` (no announce received), check the run state on-demand. The bash-tool sessions list (or the openclaw process tracker, or `~/.openclaw/agents/skills-agent/sessions/` directory listing) will show whether the worker is still alive.
+- If the worker exited but you never received the announce, the announce was lost. Read the worker's transcript at `~/.openclaw/agents/skills-agent/sessions/<sessionId>.jsonl` (or look for build artifacts in `~/.openclaw/workspace/skills/<name>/`) to recover what happened, then surface to Dave.
+- If the worker is still running after 30+ minutes for a build that should be quick, that's a stall — also surface.
+
+**On resolution** (Dave acknowledges or moves on): delete the entry. Don't let the file grow indefinitely.

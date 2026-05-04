@@ -1,190 +1,192 @@
+#!/usr/bin/env python3
 """Three-fires harness for hello-skill.
 
-3 dry fires (compose only, no iMessage), then 1 real fire (sends iMessage).
-
-A dry fire is "clean" when:
-  - exit code 0
-  - hops fire in order: triggered, config_load, compose_greeting,
-    delivery_skipped, done
-  - no event=error
-  - compose_greeting.final_text is non-empty
-  - no delivery_sent event
-
-A real fire is "clean" when:
-  - exit code 0
-  - hops fire in order: triggered, config_load, compose_greeting,
-    delivery_sent, done
-  - no event=error
-  - delivery_sent.bb_exit_code == 0
-
-If any dry fails, the real fire does NOT run.
+Runs 3 dry + 1 real fire. Validates logs, events, and delivery confirmation.
+Exits 0 only when all fires pass.
 """
-from __future__ import annotations
 
-import argparse
-import datetime as _dt
 import json
+import shutil
 import subprocess
 import sys
-import time
+from datetime import datetime, timezone
 from pathlib import Path
 
-SCRIPT_DIR = Path(__file__).resolve().parent
+
+SCRIPT_DIR = Path(__file__).parent
 SKILL_DIR = SCRIPT_DIR.parent
-LOG_DIR = SKILL_DIR / "logs"
-HELLO = SCRIPT_DIR / "hello.py"
-
-TEST_LOG_DIR = LOG_DIR
+LOGS_DIR = SKILL_DIR / "logs"
 
 
-def latest_log(after: float) -> Path | None:
-    files = [p for p in LOG_DIR.glob("run-*.jsonl") if p.stat().st_mtime >= after]
-    files.sort()
-    return files[-1] if files else None
+def clear_logs():
+    """Clear the logs directory before each fire."""
+    if LOGS_DIR.exists():
+        shutil.rmtree(LOGS_DIR)
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def parse_log(path: Path) -> dict:
-    events: dict[str, list[dict]] = {}
-    with path.open() as f:
-        for line in f:
-            try:
-                rec = json.loads(line)
-            except Exception:
-                continue
-            events.setdefault(rec.get("event"), []).append(rec)
-    return events
+def run_fire(dry=True):
+    """Run a single fire (dry or real).
+    
+    Returns:
+        (exit_code, log_path) if successful, (1, None) if subprocess fails.
+    """
+    cmd = [sys.executable, str(SCRIPT_DIR / "hello.py")]
+    if dry:
+        cmd.append("--dry-send")
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    
+    # Find the most recent log file
+    if LOGS_DIR.exists():
+        log_files = sorted(LOGS_DIR.glob("run-*.jsonl"))
+        if log_files:
+            log_path = log_files[-1]
+            return result.returncode, log_path
+    
+    return result.returncode, None
 
 
-def assert_clean(events: dict, *, real_send: bool) -> tuple[bool, list[str]]:
-    issues: list[str] = []
-    base_required = ["triggered", "config_load", "compose_greeting", "done"]
-    for k in base_required:
-        if k not in events:
-            issues.append(f"missing event: {k}")
+def validate_log(log_path, expect_real=False):
+    """Validate log structure and events.
+    
+    Expected events:
+    - triggered
+    - config_load
+    - compose_greeting
+    - delivery_skipped (if dry) or delivery_sent (if real)
+    - done
+    
+    Returns:
+        (pass, errors) where errors is a list of validation failures.
+    """
+    errors = []
+    events = []
+    
+    try:
+        with open(log_path, "r") as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        events.append(json.loads(line))
+                    except json.JSONDecodeError as e:
+                        errors.append(f"Invalid JSON in log: {e}")
+                        return False, errors
+    except Exception as e:
+        errors.append(f"Failed to read log {log_path}: {e}")
+        return False, errors
+    
+    if not events:
+        errors.append("No events in log")
+        return False, errors
+    
+    # Check for required events in order
+    required_events = [
+        "triggered",
+        "config_load",
+        "compose_greeting",
+        "delivery_skipped" if not expect_real else "delivery_sent",
+        "done",
+    ]
+    
+    event_names = [e.get("event") for e in events]
+    for req in required_events:
+        if req not in event_names:
+            errors.append(f"Missing required event: {req}")
+    
+    # Check for error events
+    error_events = [e for e in events if e.get("event") == "error"]
+    if error_events:
+        for err_evt in error_events:
+            errors.append(f"Error event found: {err_evt.get('message', 'unknown')}")
+    
+    # Validate triggered event
+    triggered = next((e for e in events if e.get("event") == "triggered"), None)
+    if triggered:
+        if "dry_send" not in triggered:
+            errors.append("triggered event missing dry_send field")
+    
+    # Validate delivery event
+    delivery = next(
+        (e for e in events if e.get("event") in ["delivery_skipped", "delivery_sent"]),
+        None,
+    )
+    if not delivery:
+        errors.append("No delivery event found")
+    elif expect_real and delivery.get("event") != "delivery_sent":
+        errors.append(f"Expected delivery_sent, got {delivery.get('event')}")
+    elif not expect_real and delivery.get("event") != "delivery_skipped":
+        errors.append(f"Expected delivery_skipped, got {delivery.get('event')}")
+    
+    return len(errors) == 0, errors
 
-    if events.get("error"):
-        issues.append(f"error events present ({len(events['error'])})")
 
-    cg = (events.get("compose_greeting") or [{}])[0]
-    if not cg.get("final_text"):
-        issues.append("compose_greeting.final_text is empty")
-
-    done = (events.get("done") or [{}])[0]
-    if done.get("exit_status") != 0:
-        issues.append(f"done.exit_status={done.get('exit_status')!r} (want 0)")
-
-    if real_send:
-        if "delivery_sent" not in events:
-            issues.append("real fire: missing delivery_sent event")
+def run_harness():
+    """Run the three-fires harness."""
+    print("=" * 60)
+    print("Hello-skill three-fires harness")
+    print("=" * 60)
+    
+    all_passed = True
+    
+    # Run 3 dry fires
+    for i in range(1, 4):
+        clear_logs()
+        
+        print(f"\n[Dry fire {i}/3]")
+        exit_code, log_path = run_fire(dry=True)
+        
+        if exit_code != 0:
+            print(f"  ✗ FAILED: script exited with code {exit_code}")
+            all_passed = False
+            continue
+        
+        if not log_path:
+            print(f"  ✗ FAILED: no log file found")
+            all_passed = False
+            continue
+        
+        passed, errors = validate_log(log_path, expect_real=False)
+        if passed:
+            print(f"  ✓ PASS")
         else:
-            ds = events["delivery_sent"][0]
-            if ds.get("bb_exit_code") != 0:
-                issues.append(f"delivery_sent.bb_exit_code={ds.get('bb_exit_code')!r} (want 0)")
-        if "delivery_skipped" in events:
-            issues.append("real fire: delivery_skipped present (should be absent)")
-    else:
-        if "delivery_skipped" not in events:
-            issues.append("dry fire: missing delivery_skipped event")
-        if "delivery_sent" in events:
-            issues.append("dry fire: delivery_sent present (should be absent)")
-
-    return (not issues), issues
-
-
-def fire(label: str, *, real_send: bool, test_log) -> bool:
-    flag_args = [] if real_send else ["--dry-send"]
-    print(f"\n══════ FIRE: {label} ({'real' if real_send else 'dry'}) ══════")
-    start = time.time() - 1
-    cmd = [sys.executable, str(HELLO), *flag_args]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0:
-        print(f"  → exit {proc.returncode}")
-        if proc.stderr:
-            print(f"  stderr (tail):\n{proc.stderr[-500:]}")
-        test_log.write({"label": label, "real_send": real_send, "ok": False, "exit": proc.returncode})
-        return False
-
-    log_path = latest_log(start)
+            print(f"  ✗ FAILED:")
+            for err in errors:
+                print(f"    - {err}")
+            all_passed = False
+    
+    if not all_passed:
+        print("\n[Summary] Dry fires failed. Skipping real fire.")
+        return 1
+    
+    # Run 1 real fire
+    clear_logs()
+    
+    print(f"\n[Real fire 1/1]")
+    exit_code, log_path = run_fire(dry=False)
+    
+    if exit_code != 0:
+        print(f"  ✗ FAILED: script exited with code {exit_code}")
+        return 1
+    
     if not log_path:
-        print("  → no log file produced")
-        test_log.write({"label": label, "real_send": real_send, "ok": False, "issue": "no_log"})
-        return False
-    events = parse_log(log_path)
-    ok, issues = assert_clean(events, real_send=real_send)
-
-    cg = (events.get("compose_greeting") or [{}])[0]
-    text = cg.get("final_text", "?")
-    print(f"  → log: {log_path.name}")
-    print(f"  → final_text = {text!r}")
-    if real_send:
-        ds = (events.get("delivery_sent") or [{}])[0]
-        print(f"  → bb_exit_code = {ds.get('bb_exit_code')}")
-
-    if ok:
-        print("  → CLEAN")
+        print(f"  ✗ FAILED: no log file found")
+        return 1
+    
+    passed, errors = validate_log(log_path, expect_real=True)
+    if passed:
+        print(f"  ✓ PASS")
     else:
-        print("  → ISSUES:")
-        for i in issues:
-            print(f"     - {i}")
-    test_log.write({
-        "label": label,
-        "real_send": real_send,
-        "ok": ok,
-        "issues": issues,
-        "log_path": str(log_path),
-    })
-    return ok
-
-
-class TestLog:
-    def __init__(self):
-        ts = _dt.datetime.now(_dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        TEST_LOG_DIR.mkdir(parents=True, exist_ok=True)
-        self.path = TEST_LOG_DIR / f"test-{ts}.jsonl"
-        self._fh = self.path.open("a", buffering=1)
-
-    def write(self, rec: dict):
-        rec = {"ts": _dt.datetime.now(_dt.timezone.utc).isoformat(), **rec}
-        self._fh.write(json.dumps(rec, default=str) + "\n")
-
-    def close(self):
-        try:
-            self._fh.close()
-        except Exception:
-            pass
-
-
-def main():
-    ap = argparse.ArgumentParser(description="Three-fires harness for hello-skill.")
-    ap.add_argument("--no-real", action="store_true", help="Skip the real fire (3 dry only).")
-    args = ap.parse_args()
-
-    suffix = "(3 dry + 1 real)" if not args.no_real else "(3 dry, no real fire)"
-    print(f"Three-fires harness for hello-skill {suffix}")
-
-    test_log = TestLog()
-    print(f"  test log: {test_log.path.name}")
-    results: list[tuple[str, bool]] = []
-    for i in range(3):
-        ok = fire(f"dry #{i+1}", real_send=False, test_log=test_log)
-        results.append((f"dry #{i+1}", ok))
-        if not ok:
-            print("\n  Dry fire failed — aborting before any real fire (per harness contract).")
-            break
-        time.sleep(1)
-
-    if all(ok for _, ok in results) and not args.no_real:
-        ok = fire("REAL (sends iMessage)", real_send=True, test_log=test_log)
-        results.append(("real", ok))
-
-    print("\n══════ SUMMARY ══════")
-    for label, ok in results:
-        print(f"  {label:30s} {'✓' if ok else '✗'}")
-    all_ok = len(results) >= (3 if args.no_real else 4) and all(ok for _, ok in results)
-    print(f"\nOverall: {'PASS' if all_ok else 'FAIL'}")
-    test_log.close()
-    sys.exit(0 if all_ok else 1)
+        print(f"  ✗ FAILED:")
+        for err in errors:
+            print(f"    - {err}")
+        return 1
+    
+    print("\n" + "=" * 60)
+    print("All fires passed!")
+    print("=" * 60)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(run_harness())

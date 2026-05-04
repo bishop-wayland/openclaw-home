@@ -22,11 +22,11 @@ plugins/
 subagents/
 
 # Session conversation logs and agent runtime state (all agents)
-# Use agents/* + !exception form so the agents/skills-agent/ doc-only
-# dispatch contract can be re-included; git can't re-include children of
-# a fully-excluded parent directory.
-agents/*
-!agents/skills-agent/
+# (Earlier we exempted agents/skills-agent/ when SYSTEM_PROMPT.md and
+# DISPATCH.md lived there. Those are gone — the skills-agent's charter
+# now lives in its workspace at workspace-skills-agent/AGENTS.md, and
+# everything left under agents/skills-agent/ is runtime state.)
+agents/
 
 
 # SQLite runtime databases
@@ -45,6 +45,11 @@ workspace/.openclaw/
 # ACP agent sub-workspaces (managed by their own sessions)
 workspace/claude/
 workspace/codex/
+
+# Sub-agent workspaces (each has its own .git for backup per
+# docs/concepts/agent-workspace.md §"Git backup"). The wizard initializes
+# the nested .git on `openclaw agents add`. Don't double-track here.
+workspace-skills-agent/
 
 # Claude Code internal
 .claude/
