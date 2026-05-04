@@ -34,6 +34,7 @@ flows/
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+*.db
 
 # Identity/auth
 identity/
