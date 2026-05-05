@@ -163,6 +163,14 @@ If any fire fails, fix and re-run from scratch (reset dedup state, etc.). Don't 
 
 **Contract:** harness exits 0 with three CONSECUTIVE clean dry fires + one real. Logs are clean. Real fire's side effect is verifiable (email arrives, file is written, iMessage delivered, etc.).
 
+**Cost-tracking is a harness assertion, not a log line.** If the spec's §9 estimates per-run cost > $0, the harness's real fire MUST verify `cost_total > 0` in the JSONL. A `cost_total: 0.0` event on a run that called paid APIs means the cost accumulator is disconnected — the runaway-cost guard isn't enforceable, and the spec's cost cap is paper. Caught during YNAB preview validation: 150 LLM calls logged, `cost_total: 0.0`. Harness assertion: `cost_total > 0` (or `cost_total == 0` only if §9 declares free-tier-only).
+
+**Flag semantics — pin them, don't conflate them.** Skills with both delivery hops AND external write hops typically have two independent flags:
+- `--dry-send` (or equivalent) → skip delivery hops only. Used by harness *dry* fires to avoid spamming Dave during testing.
+- `--no-apply` (or equivalent) → skip the write hop only. Used to gate external state changes (YNAB PATCH, etc.) without affecting delivery.
+
+These are independent. The harness's *dry* fires use both (no spam, no writes). The harness's *real* fire and the post-install preview fire use `--no-apply` only (delivery happens, writes don't). **Never ship a skill where the post-install preview fire passes both flags** — it would never deliver, and you'd silently lose the production-path validation. (This bug shipped in the YNAB build's `install.sh`; see commit `0393047`.)
+
 ### Step 6 — Bishop validation
 
 Add a "When Dave invokes Bishop" section to SKILL.md describing how Dave will use the skill conversationally with Bishop. (Examples: *"Show me this week's digest"*, *"Run it now"*, *"Tune the threshold to 15"*.)
@@ -191,9 +199,25 @@ The build is automated end-to-end through install. The worker writes the install
 **Schedule selection (unchanged):**
 - Recurring tool-using runtime → **launchd** (e.g., job-search). NOT openclaw cron — openclaw's cron path has invariants for the announce/deliver pattern that don't fit a tool-using worker.
 - Recurring announce-pattern alert → **openclaw cron** in `~/.openclaw/cron/jobs.json` (e.g., medication reminders). See `alert-circuit` for the canonical pattern.
+- Recurring exec-of-script → **openclaw cron** with the agentTurn-invokes-exec pattern. **Canonical reference: paddle-board-alert's cron entry in `~/.openclaw/cron/jobs.json`.** Copy that entry's shape — don't invent fields. The validator requires `payload.kind: "agentTurn"` + `payload.message` (a Haiku-readable prompt that calls the exec tool) + `payload.tools: ["exec"]`. Shortcuts like `payload.shell` or `payload.command` are silently ignored — the cron registers but does nothing. (This bug shipped in the YNAB build's `install.sh`; see commit `0393047`.)
 - Hook-driven (gmail, etc.) → openclaw hooks. See `alert-circuit/EXAMPLES.md`.
 
-**Worker's role:** writes `install.sh`, `enable-live.sh`, `disable-live.sh`, and `SETUP.md` into the skill directory. **Does not run them** — `tools.fs.workspaceOnly: true` prevents the worker from reaching `~/.openclaw/cron/jobs.json` or Bishop's AGENTS.md anyway. Worker exits cleanly with the announce.
+**Cron timeout sizing:** `payload.timeoutSeconds` must accommodate the *first* run on full backlog, not the steady-state run. A skill that processes 5-10 transactions in steady state may face 100-200 on first fire. Estimate: backlog × per-item time + delivery overhead, then add 50% headroom. Default to 1200s for write-gated skills; tune down later once steady-state is established.
+
+**Worker's role:** writes `install.sh`, `enable-live.sh`, `disable-live.sh`, and `SETUP.md` into the skill directory. **Does not run them against production targets** — `tools.fs.workspaceOnly: true` prevents the worker from reaching `~/.openclaw/cron/jobs.json` or Bishop's AGENTS.md anyway. Worker exits cleanly with the announce.
+
+**Install-script smoke test (mandatory):** the three-fires harness validates the skill's *runtime*; it does NOT validate the install scripts. Workers have shipped install scripts with broken cron schemas, wrong flags, and unexpanded heredoc variables — bugs that don't surface until Bishop runs them in production. Before declaring SUCCESS, the worker MUST smoke-test each install script:
+1. **Syntax check** every shell script: `bash -n install.sh enable-live.sh disable-live.sh`. Any non-zero exit is a hard fail.
+2. **Sandbox-execute `install.sh`** against fake target paths: copy `install.sh` to `/tmp/install-smoke-<id>.sh`, set `CRON_CONFIG=/tmp/test-jobs.json` and `AGENTS_MD=/tmp/test-agents.md` env-overrides (write `install.sh` to read these env vars with sensible defaults), seed the test cron file with `{"version": 1, "jobs": []}` and an empty test agents file, run the script. Verify:
+   - The test jobs file has exactly one new entry with `payload.kind: "agentTurn"` and a non-empty `payload.message` field
+   - The entry's `payload` does NOT contain `shell`, `command`, or other invented fields
+   - The entry's `schedule` is `{kind, expr, tz}` shape
+   - The test agents file received the SETUP.md append
+3. **Sandbox-execute `enable-live.sh` and `disable-live.sh`** against the same test cron file: verify they actually flip the gate (the `--no-apply` flag — or the spec's chosen gate — appears/disappears in the right field).
+
+If any smoke check fails, the worker fixes the install script and re-runs. The harness's STATUS line in BUILD-SUMMARY.md should report `install scripts: SMOKE PASS` alongside the runtime harness's `3 dry + 1 real PASS`.
+
+This step is non-negotiable. Install-script bugs that ship to Bishop turn a clean SUCCESS announce into a manual debugging session — defeats the autonomy.
 
 **Bishop's role (post-announce, automatic):**
 1. Run `bash ~/.openclaw/workspace/skills/<name>/scripts/install.sh`. The script handles schedule registration, AGENTS.md append, and the preview fire.
@@ -258,7 +282,27 @@ Bishop reads the summary and iMessages Dave the result.
 
 ## What NOT to do
 
-These are the failure modes that bit during the job-search build, encoded as rules.
+These are the failure modes that bit during prior builds (job-search, paddle-board-alert, ynab-categorize), encoded as rules.
+
+### Don't invent openclaw cron schema
+
+`payload.kind: "agentTurn"` requires `payload.message` (a Haiku-readable prompt). Fields like `payload.shell`, `payload.command`, `payload.script` are silently ignored — the cron registers but does nothing when fired. Pattern-match against `paddle-board-alert`'s entry in `~/.openclaw/cron/jobs.json` (read it as part of compose-first) before writing your own entry. The validator at `/opt/homebrew/lib/node_modules/openclaw/dist/jobs-*.js` is the source of truth on accepted shapes.
+
+### Don't conflate `--dry-send` with `--no-apply`
+
+These are independent flags with non-overlapping responsibilities:
+- `--dry-send` skips delivery hops (email, iMessage, Slack, etc.). For harness *dry* fires that mustn't spam Dave.
+- `--no-apply` skips the external write hop (YNAB PATCH, third-party API mutations, etc.). For the write-disabled preview gate.
+
+The harness real fire and the post-install preview fire use `--no-apply` only — they DELIVER (so Dave sees real production output) but DON'T WRITE (so YNAB stays untouched). A preview fire with both flags is silently broken: it never delivers, you never validate the production path, and you only find out at 9 AM Sunday.
+
+### Don't ship install scripts unverified
+
+The runtime harness validates the skill, not its install scripts. Install scripts have shipped with broken cron schemas, wrong flag combos, and unexpanded heredoc variables — bugs that surface only when Bishop runs them in production. Per Step 7's "Install-script smoke test" contract, every install script must be syntax-checked AND sandbox-executed against fake target paths before SUCCESS announce. `bash -n` + a `/tmp/test-jobs.json` dry-run is cheap; production debugging is expensive.
+
+### Don't ship if cost tracking returns zero on a real run
+
+If the spec's §9 estimates per-run cost > $0, the harness real fire MUST verify `cost_total > 0` in the JSONL. A `cost_total: 0.0` event despite paid-API calls means the cost accumulator is disconnected — the runaway-cost guard isn't enforceable. The harness's contract is to assert this, not just to log it.
 
 ### Don't skip JSONL logging "just for now"
 
