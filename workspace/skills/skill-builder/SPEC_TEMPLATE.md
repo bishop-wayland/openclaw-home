@@ -26,8 +26,16 @@ A complete worked example is in `examples/job-search-spec.md`.
 # `<skill-name>` Skill Spec
 
 **Spec version:** 1
+**Mode:** `build` | `patch`
+**Derive from:** `<source-skill-path-or-null>` (only meaningful for `build`; null = greenfield, set = scaffold by copying source first then apply spec changes)
 **Authored:** `<YYYY-MM-DD>` by Dave + Claude (planning session)
 **Author notes:** `<one paragraph: why this skill, what problem it solves, how it fits into Dave's workflow>`
+
+**Mode semantics:**
+- **build** — produces a NEW skill at `~/.openclaw/workspace/skills/<skill-name>/`. Target must not exist. With `Derive from` null, scaffold from scratch; with it set, copy the source skill as the starting point, then apply the spec's changes on top. Worker writes install scripts; Bishop runs full install on announce.
+- **patch** — modifies an EXISTING skill in place. Target must exist. State files (lookup tables, dedup stores, in-flight queues) are preserved. Cron entry is preserved (no re-register). Bishop's AGENTS.md routing is preserved (no re-append). Worker applies surgical edits per the patch-spec, runs the existing harness, runs ONE preview fire to validate. Bishop relays the preview output; if Dave was already in live mode, gate stays where it was.
+
+A patch-spec is typically shorter (5-7 sections) than a build-spec (13). Required sections for patch: §1 elevator pitch (what's changing and why), §4 pipeline (only the hops affected), §6 initial parameters (only new/changed ones), §8 success criteria (what verifies the patch worked), §11 test harness expectations (any new assertions), §13 dispatch instructions (target skill path; preview-fire requirements). Other sections inherit from the existing skill's prior spec — note "unchanged from build-spec" rather than re-stating.
 
 ## 1. Elevator pitch
 

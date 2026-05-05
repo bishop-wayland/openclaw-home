@@ -153,40 +153,70 @@ Don't spawn for questions Dave can answer with a quick reply. Don't spawn multip
 
 When Dave hands you a path to a skill spec at `~/.openclaw/specs/<name>.md` (or asks "build the `<name>` skill"), dispatch the **skills-agent** sub-agent (a registered OpenClaw agent at `agents.list[].id: "skills-agent"`) via `sessions_spawn`. The skills-agent has its own workspace at `~/.openclaw/workspace-skills-agent/` with its own narrow `AGENTS.md` charter — you don't write the worker's instructions; the agent's own AGENTS.md does.
 
-**The dispatch protocol — three steps:**
+**Read the spec's `Mode:` field first.** The methodology supports two modes — `build` (creating a new skill, possibly derived from a source) or `patch` (modifying an existing skill in place). Pre-staging and post-announce behavior differ. If the field is missing or unrecognized, ask Dave to clarify before dispatching — do not guess.
+
+**Dispatch protocol — build mode:**
 
 1. **Pre-stage inputs into the skills-agent workspace.** The worker can only read inside its own workspace (`tools.fs.workspaceOnly: true`), so any input the build needs has to live there first. Copy:
    - Methodology pack: `cp -r ~/.openclaw/workspace/skills/skill-builder/* ~/.openclaw/workspace-skills-agent/skill-builder/`
    - Per-build spec: `cp ~/.openclaw/specs/<name>.md ~/.openclaw/workspace-skills-agent/spec.md`
+   - **If `Derive from: <source>` is set in the spec:** also pre-stage the source skill: `cp -r ~/.openclaw/workspace/skills/<source>/ ~/.openclaw/workspace-skills-agent/<source>/`. The worker will `cp -r` it into its build target as the scaffold.
    - Any seed inputs the spec's "Composes with" section references (e.g., `merchant-lookup.json` for the YNAB skill): copy to `~/.openclaw/workspace-skills-agent/<input-name>` per the spec.
 
 2. **Call `sessions_spawn` with explicit `agentId`.** This is the one-shot, non-thread-bound spawn:
    ```
    sessions_spawn(
      agentId: "skills-agent",
-     task: "Build the <name> skill from the spec at ./spec.md. Methodology pack at ./skill-builder/. Build identity: skill-build-<name>-<YYYYMMDD>-<HHMM>. Final exec-copy destination after harness PASS: /Users/bishop/.openclaw/workspace/skills/<name>/. Read your AGENTS.md and TOOLS.md first.",
+     task: "Build the <name> skill from the spec at ./spec.md (Mode: build). Methodology pack at ./skill-builder/. Build identity: skill-build-<name>-<YYYYMMDD>-<HHMM>. Final exec-copy destination after harness PASS: /Users/bishop/.openclaw/workspace/skills/<name>/. Read your AGENTS.md and TOOLS.md first.",
      runTimeoutSeconds: 1800,
      cleanup: "keep"
    )
    ```
    `runtime` defaults to `"subagent"` (native), `mode` defaults to `"run"` (one-shot), `context` defaults to `"isolated"` (no transcript fork). Don't override these.
 
-3. **Call `sessions_yield()` to wait for the announce.** Per `docs/concepts/session-tool.md`: *"End the current turn and wait for follow-up sub-agent results... Use it after spawning sub-agents when you want completion results to arrive as the next message instead of building poll loops."*
+3. **Call `sessions_yield()` to wait for the announce.**
 
-   Do NOT poll `/subagents list`, `sessions_list`, or `process action:log` in a loop. Per `docs/tools/subagents.md`: *"Completion is push-based. Once spawned, do not poll ... in a loop just to wait for it to finish; inspect status only on-demand for debugging or intervention."*
+**Dispatch protocol — patch mode:**
+
+1. **Pre-stage inputs into the skills-agent workspace.** Patch mode needs the existing skill staged so the worker can edit it:
+   - Methodology pack: `cp -r ~/.openclaw/workspace/skills/skill-builder/* ~/.openclaw/workspace-skills-agent/skill-builder/`
+   - Per-patch spec: `cp ~/.openclaw/specs/<name>-patch-<n>.md ~/.openclaw/workspace-skills-agent/spec.md` (or whatever the patch-spec's path is — convention is `<skill-name>-patch-<n>.md` or `<skill-name>-patch-<short-description>.md`).
+   - **The existing skill (target):** `cp -r ~/.openclaw/workspace/skills/<name>/ ~/.openclaw/workspace-skills-agent/skills/<name>/`. **State files come along for the ride** — the worker treats them as read-only inputs and must not overwrite them.
+
+2. **Call `sessions_spawn`** with task body explicitly noting patch mode:
+   ```
+   sessions_spawn(
+     agentId: "skills-agent",
+     task: "Patch the <name> skill from the patch-spec at ./spec.md (Mode: patch). Target skill is staged at ./skills/<name>/. Methodology pack at ./skill-builder/. Patch identity: skill-patch-<name>-<YYYYMMDD>-<HHMM>. Final exec-copy destination (in-place overwrite): /Users/bishop/.openclaw/workspace/skills/<name>/. State files MUST be byte-identical between staged copy and final overwrite. Read your AGENTS.md and TOOLS.md first.",
+     runTimeoutSeconds: 1800,
+     cleanup: "keep"
+   )
+   ```
+
+3. **Call `sessions_yield()` to wait for the announce.**
+
+**General (both modes):** Do NOT poll `/subagents list`, `sessions_list`, or `process action:log` in a loop. Per `docs/tools/subagents.md`: *"Completion is push-based. Once spawned, do not poll ... in a loop just to wait for it to finish; inspect status only on-demand for debugging or intervention."*
 
 **On the announce.** When the worker finishes, the OpenClaw runtime auto-posts an announce to your session as a follow-up agent turn. Status is runtime-derived (`success` / `error` / `timeout` / `unknown`), Result content is the worker's latest visible assistant text. Internal metadata is for your orchestration only — rewrite for Dave in your own assistant voice; don't forward raw announce metadata to him verbatim.
 
-**Post-build install protocol (automatic on announce SUCCESS).** Per the skill-builder methodology Step 7, every skill build flows automatically through install. When the announce comes back as SUCCESS, before relaying anything to Dave:
+**Post-announce protocol — build mode (automatic on announce SUCCESS).** Per the skill-builder methodology Step 7, every build flows automatically through install. When the announce comes back as SUCCESS, before relaying anything to Dave:
 
 1. **Verify the install scripts exist.** Check for `~/.openclaw/workspace/skills/<name>/scripts/install.sh`. If not present, the worker didn't follow the methodology — surface this to Dave as a build defect, don't paper over it.
 2. **Run the install script:** `bash ~/.openclaw/workspace/skills/<name>/scripts/install.sh`. This script is idempotent and handles three things: (a) registers the schedule (cron / launchd / hook) with the write-gate ON, (b) appends `SETUP.md` content to your own `~/.openclaw/workspace/AGENTS.md` if SETUP.md is non-empty and the section isn't already there, (c) triggers one immediate preview fire so Dave gets to see the production-equivalent output.
 3. **Read the preview fire's log** at `~/.openclaw/workspace/skills/<name>/logs/run-*.jsonl` (newest). Confirm `done` event with `exit_status: success`. If the preview fire failed, surface that to Dave instead of falsely reporting success.
 4. **Relay to Dave.** For skills with a write-gate (preview mode): "Skill built and installed in preview mode. Preview fire just ran — you should have the email/iMessage. Reply 'go' to enable live mode (or 'rollback' to disable)." For skills without a write-gate: "Skill built and installed live. Next scheduled fire is `<datetime>`."
 
+**Post-announce protocol — patch mode (automatic on announce SUCCESS).** Patches do NOT re-install. Existing cron entry, AGENTS.md routing, and live-state stay where they are. The job is to validate the patch end-to-end via one preview fire:
+
+1. **Verify PATCH-SUMMARY.md exists** at `~/.openclaw/workspace/skills/<name>/PATCH-SUMMARY.md`. If not present, the worker didn't follow patch-mode reporting — surface as defect.
+2. **Verify state files are intact.** Spot-check that core state files (e.g., `state/merchant-lookup.json`, in-flight `state/pending-*.json`) match their pre-patch byte sizes / mtimes. If a state file looks newer or smaller, that's a state-preservation violation; surface to Dave before proceeding.
+3. **Trigger ONE preview fire** in the production-equivalent path: `python3 ~/.openclaw/workspace/skills/<name>/scripts/propose.py --no-apply` (or whatever the skill's main entry + write-gate flag is per its SKILL.md). Run in background, no aggressive timeout. Wait for completion.
+4. **Read the preview fire's log** (newest `logs/run-*.jsonl`). Verify `done` with `exit_status: success`, deliveries occurred, and any patch-specific JSONL events the patch-spec promised are present.
+5. **Relay to Dave.** "Patch applied to `<name>`. Preview fire ran clean — you should have the email/iMessage. Diff vs prior baseline: `<one-line summary of what's different in the output>`. Reply 'go' if you want this in production (no-op if already live; the patch is already live whether you say go or not — preview mode preference is preserved)."
+
 **On Dave's "go" reply (or equivalent affirmation):** run `bash ~/.openclaw/workspace/skills/<name>/scripts/enable-live.sh`. Confirm: "Live mode enabled. Next scheduled fire commits real writes."
 
-**On Dave's "rollback" reply (or equivalent retreat):** run `bash ~/.openclaw/workspace/skills/<name>/scripts/disable-live.sh`. Confirm: "Live mode disabled, back to preview."
+**On Dave's "rollback" reply (or equivalent retreat):** for build mode, run `bash ~/.openclaw/workspace/skills/<name>/scripts/disable-live.sh` to revert to preview. For patch mode, "rollback" means reverting the patch itself — that's a git operation, not a script: `git -C ~/.openclaw revert <patch-commit>` or `git checkout <prior-commit> -- workspace/skills/<name>/`. Surface this to Dave; don't auto-revert.
 
 **Match against existing live state before flipping.** If Dave says "go" and the skill is already live (cron entry already lacks the write-gate flag), don't run enable-live.sh — tell him "already live, no change."
 

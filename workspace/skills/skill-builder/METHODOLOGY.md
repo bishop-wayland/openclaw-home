@@ -87,9 +87,48 @@ Each was diagnosed in seconds because the JSONL trace pointed straight at the fa
 
 ---
 
+## Modes: build vs patch
+
+The methodology supports two operational modes, declared at the top of the spec via the `Mode:` field.
+
+### Build mode — creates a new skill
+
+Target path must NOT exist. The agent scaffolds a new skill at `~/.openclaw/workspace/skills/<skill-name>/`.
+
+The spec optionally names a `Derive from:` source. If null, scaffold from scratch using compose-first (read existing skills as references). If set (e.g., `Derive from: ynab-categorize`), the agent's first action is `cp -r <source> ./skills/<target>/` — the new skill starts as a clone of the source, then the spec's changes are applied on top. Forks happen this way: the new skill is independent from the moment of creation; subsequent patches to the source don't propagate, and vice versa. Genealogy lives in git, not in the skill-builder workflow.
+
+Build mode runs the full Step 0 → Step 8 sequence. Bishop runs `install.sh` on announce SUCCESS — fresh cron entry, fresh AGENTS.md routing, one preview fire.
+
+### Patch mode — modifies an existing skill
+
+Target path MUST exist. The agent applies surgical edits to the skill at `~/.openclaw/workspace/skills/<skill-name>/`.
+
+**Patch invariants** (default-on; the agent doesn't violate these without an explicit spec instruction):
+- **State preservation** — state files (lookup tables, dedup stores, pending queues, run logs) are not touched unless the patch-spec explicitly migrates them.
+- **Install preservation** — cron entry is not re-registered. Bishop's AGENTS.md sections are not re-appended. The skill's existing schedule and routing stay where they are.
+- **Live-state preservation** — if the skill is currently in live mode (write-gate off), patch mode does NOT flip it back to preview without explicit spec instruction. The patch's preview fire runs alongside the live state, not by overwriting it.
+- **Surgical scope** — minimize blast radius. A patch to `_compose_email_digest` should not rewrite `propose.py`'s main loop; a patch adding a new lookup field should not rebuild the entire classify hop.
+
+Patch mode runs an abbreviated sequence:
+- Step 0 — read patch-spec (and the existing skill's prior build-spec for context).
+- Step 1 — skipped. The existing skill IS the composition; the patch-spec just declares deltas.
+- Step 2 — limited decision sweep. Only architectural commitments introduced by the patch get reviewed. Existing commitments inherit.
+- Step 3 — skipped. No scaffolding; the skill structure exists.
+- Step 4 — apply edits hop-by-hop, but only to the hops the patch touches. Maintain JSONL logging contracts on edited hops.
+- Step 5 — three-fires harness MUST still pass (the patch could regress something else). Compare logs against the prior baseline if available.
+- Step 6 — skip unless Bishop's invocation patterns change (rare).
+- Step 7 — DO NOT re-run install.sh. Worker writes any new scripts (e.g., a one-off `migrate-state.sh` if the patch needs schema migration), but install state is preserved by Bishop on announce.
+- Step 8 — report back with a PATCH-SUMMARY.md (deltas applied, regression check results, preview-fire output).
+
+Bishop's role on patch announce: trigger ONE preview fire (`python3 .../propose.py --no-apply` or equivalent), read the log, relay the output to Dave with "patch applied; reply 'go' to enable live (if not already), 'rollback' to revert." For patches that don't touch the production code path (copy edits, parameter tweaks), the preview fire validates regression-cleanliness; for patches to the pipeline, it validates the new behavior end-to-end.
+
+**The mode question is the agent's first decision.** Read the `Mode:` field at the top of the spec. If `build`, follow Step 0 → Step 8 below. If `patch`, follow the abbreviated sequence above. If the field is missing or ambiguous, **stop-and-ask** — don't guess.
+
+---
+
 ## Build sequence (the happy path)
 
-Each step has a contract: the agent should only advance when the previous step's contract is met.
+Each step has a contract: the agent should only advance when the previous step's contract is met. **This is the build-mode sequence.** Patch mode follows the abbreviated variant in the "Modes" section above.
 
 ### Step 0 — Read the spec
 
@@ -103,7 +142,9 @@ If the spec file doesn't exist at the expected path, halt immediately and ping B
 
 List existing skills (`ls ~/.openclaw/workspace/skills/`). Read their SKILL.md frontmatter descriptions. For each capability the new skill needs, identify whether to reuse or build.
 
-**Contract:** "Composes with" section of the planned SKILL.md is decided. List of "build new" capabilities is enumerated.
+**If the spec has `Derive from: <source>` set:** skip the broad survey — the source skill IS your scaffold. Copy the source first (`cp -r <source-path> ./skills/<target>/`), then identify which capabilities of the source you'll modify, replace, or extend per the spec's deltas. Compose-first still applies for *new* capabilities the source doesn't already have (e.g., adding gog email to a skill that previously only sent iMessage).
+
+**Contract:** "Composes with" section of the planned SKILL.md is decided. List of "build new" capabilities is enumerated. If `Derive from` is set, the source has been copied to the target path and the agent has identified which files are subject to the spec's changes.
 
 ### Step 2 — Decision-point sweep
 
