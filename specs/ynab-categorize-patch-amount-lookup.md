@@ -4,11 +4,15 @@
 **Mode:** patch
 **Derive from:** null (not applicable in patch mode)
 **Authored:** 2026-05-04 by Dave + Claude (planning session)
-**Author notes:** Adds a fallback layer to classify.py: when payee lookup fails, check whether the transaction amount matches a known amount-rule before falling through to the LLM call. Use case: recurring fixed-dollar transactions whose payee text varies (e.g., spousal-support check — same amount every month, but the bank's payee text shifts run-to-run). Dave maintains the rule list manually in `state/amount-lookup.json`. v1 ships the file empty; Dave adds rules locally as they come up.
+**Author notes:** Adds two related capabilities. (1) Classification fallback: when payee lookup fails, check whether the transaction amount matches a known amount-rule before falling through to the LLM call. Use case: recurring fixed-dollar transactions whose payee text varies (spousal-support check, fixed-rate subscription, monthly rent — same amount every cycle but the bank's payee text shifts). (2) iMessage syntax for adding rules: Dave can send "remember $-2500.00 = Spousal Support" and Bishop appends it to `state/amount-lookup.json` via a new `apply-amount-rule.py` script. Parallel to the existing merchant-approval routing.
 
 ## 1. Elevator pitch
 
-Insert an "amount-rule check" between Step 1 (payee lookup) and Step 2 (web+LLM) in `classify.py`'s `classify_transaction`. If the transaction amount (in dollars) matches an entry in `state/amount-lookup.json` (within configurable tolerance, default 0.0 = exact), return as `auto_apply` with the rule's category. Otherwise fall through to the existing LLM path. New event `classify_amount_hit` joins `classify_lookup_hit` and `classify_llm_call`/`classify_error` as the per-txn classification outcomes.
+**Two new capabilities, one patch:**
+
+(1) **Classifier fallback.** Insert an "amount-rule check" between Step 1 (payee lookup) and Step 2 (web+LLM) in `classify.py`'s `classify_transaction`. If the transaction amount (in dollars) matches an entry in `state/amount-lookup.json` (within configurable tolerance, default 0.0 = exact), return as `auto_apply` with the rule's category. Otherwise fall through to the existing LLM path. New event `classify_amount_hit` joins `classify_lookup_hit` and `classify_llm_call`/`classify_error` as the per-txn classification outcomes.
+
+(2) **iMessage rule entry.** New script `apply-amount-rule.py` parses an iMessage like "remember $-2500.00 = Spousal Support" (also accepts `means`, `as`, `→`, `->` as the separator) into a `{amount, category, note}` rule and appends to `state/amount-lookup.json`. Validates the amount is parseable and the category matches an existing YNAB category. Bishop's AGENTS.md gains a new "Amount-Rule Entry" routing section (delivered via `AGENTS-ADDENDUM.md` for Bishop to apply post-announce — patch mode doesn't re-run install.sh).
 
 ## 4. Pipeline (only affected hops)
 
@@ -25,7 +29,10 @@ All other hops: unchanged. Apply hop, deliver hops, persist hops are untouched.
 - **Match semantics for v1:** exact amount match (tolerance 0.0). Dollar comparison after dividing YNAB millicent value by 1000.0.
 - **Order of precedence:** payee-lookup wins over amount-lookup. Amount-lookup is a fallback when payee match fails. (Rationale: payee match is Dave's curated truth; amount match is a heuristic. v2 may invert if the conflict comes up in practice; not v1.)
 - **Module organization:** new module `scripts/amount_lookup.py` with `load_amount_rules(path)` and `match_amount(amount, rules, tolerance)`. Mirror `scripts/merchant_lookup.py`'s shape. Don't merge into merchant_lookup.py — different schema, different match logic, separate concerns.
-- **Approval flow:** unchanged. Amount-rules are NOT introduced via Dave's iMessage approval reply. Dave edits the JSON manually. (v2 may add iMessage syntax like "remember $-2500.00 = Spousal Support" but that's deferred.)
+- **Approval flow extension:** parallel to merchant-approval, NOT integrated. Existing "approve" routing (for new merchants in the run-scoped pending file) is unchanged. NEW routing for amount rules: Dave's iMessage matches the regex `(?i)\bremember\b\s+\$?(-?\d+(?:\.\d+)?)\s*(?:=|→|->|means|as)\s+(.+?)$` (also accepts `always` as a synonym for `remember`). The match isn't run-scoped (no run_id needed) — amount rules are global. Bishop calls `scripts/apply-amount-rule.py --message "<reply text>"`.
+- **Conflict policy on existing amount:** if the parsed amount already exists in `amount-lookup.json` with a DIFFERENT category, the script REJECTS with an iMessage telling Dave the existing mapping and instructing him to edit the JSON directly to replace. v1 doesn't auto-overwrite — keeps Dave in control. (v2 could add "replace $X.XX with <new>" syntax for explicit override.)
+- **Conflict policy on existing amount + same category:** silent no-op + idempotent confirmation iMessage ("$X.XX → <category> already in rules, no change").
+- **Validation requirements:** `apply-amount-rule.py` validates (a) amount is a parseable number; (b) category text exactly matches an entry from YNAB's category list (fetched via the same `op-ynab-key.sh` + GET pattern used in `propose.py:fetch_categories`). On either validation failure, send Dave an iMessage explaining what failed and how to retry.
 
 ## 6. Initial parameters (TUNABLE)
 
@@ -76,7 +83,8 @@ Updated `SKILL.md` "Files and tuning points" section adds:
 - Behavior identical to pre-patch when amount-lookup is empty (proves the new branch is correctly fall-through).
 
 **Future verification (Dave's manual test, after this patch ships):**
-- Dave adds one rule to `state/amount-lookup.json` for a known recurring amount, manually fires `python3 propose.py --no-apply`, confirms a `classify_amount_hit` event in the JSONL for the matching transaction.
+- Dave adds one rule to `state/amount-lookup.json` for a known recurring amount (either via the new iMessage syntax — "remember $-2500.00 = Spousal Support" — or by editing the JSON directly), manually fires `python3 propose.py --no-apply`, confirms a `classify_amount_hit` event in the JSONL for the matching transaction.
+- For the iMessage path: Dave replies "remember $-2500.00 = 💰 Spousal Support" → Bishop matches the regex → calls `apply-amount-rule.py --message "remember $-2500.00 = 💰 Spousal Support"` → script validates + appends to amount-lookup.json + sends confirmation iMessage. Dave audits the resulting JSON.
 - This is NOT part of the harness — happens after Dave reviews the patch and seeds the rules.
 
 ## 11. Test harness expectations
@@ -95,12 +103,15 @@ Updated `SKILL.md` "Files and tuning points" section adds:
 
 | File | Action | Why |
 |---|---|---|
-| `scripts/amount_lookup.py` | **CREATE** | New module: `load_amount_rules(path)` + `match_amount(amount, rules, tolerance)`. Mirror `merchant_lookup.py`'s shape. ~30 LOC. |
+| `scripts/amount_lookup.py` | **CREATE** | New module: `load_amount_rules(path)` + `match_amount(amount, rules, tolerance)` + `add_amount_rule(rules, amount, category, note)` (returns updated rules list, raises on conflict). Mirror `merchant_lookup.py`'s shape. ~50 LOC. |
+| `scripts/apply-amount-rule.py` | **CREATE** | New entry-point script. Parses an iMessage via regex, validates amount + category against YNAB, appends to `state/amount-lookup.json`, sends a confirmation iMessage via the existing `deliver.send_imessage` helper. Modeled on `apply-additions.py`'s structure (auth, parse, validate, mutate state, deliver confirmation). ~120 LOC. |
 | `scripts/classify.py` | EDIT | `classify_transaction` gains the Step 1.5 amount-rule branch between existing payee-lookup and LLM-call branches. Add `amount_rules` kwarg. ~15 LOC inserted. |
 | `scripts/propose.py` | EDIT | Hop 5: load amount-rules; emit `load_amount_lookup`. Hop 6 loop: pass `amount_rules` to classify_transaction; emit `classify_amount_hit` when result evidence indicates amount match. ~10 LOC modified. |
 | `state/amount-lookup.json` | **CREATE** | Empty seed file: `{"version": 1, "rules": []}`. |
 | `scripts/test.py` | EDIT | Add the `load_amount_lookup` assertion in the harness's per-fire validation. Keep existing `cost_total > 0` assertion intact. ~5 LOC. |
-| `SKILL.md` | EDIT | Tuning surface section gains the new state file. ~3 lines added. |
+| `SETUP.md` | EDIT | Add a second routing section for "Amount-Rule Entry" alongside the existing "YNAB Approval Routing" section. The full SETUP.md now documents BOTH Bishop-side behaviors (forensic record). |
+| `AGENTS-ADDENDUM.md` | **CREATE** (skill root) | One-shot file for Bishop to append to his AGENTS.md post-announce. Contains JUST the new "Amount-Rule Entry" routing section (NOT the existing merchant approval section, which Bishop already has). Bishop appends with idempotency check (grep for "Amount-Rule Entry" header), then deletes the addendum file. |
+| `SKILL.md` | EDIT | Tuning surface section gains the new state file + the new iMessage syntax. ~5 lines added. |
 | `config.json` | EDIT | Add `amount_match_tolerance: 0.0` and `amount_lookup_overrides_payee: false` to the existing config dict. |
 
 **If the worker finds it needs to touch any file not on this list, that's a stop-and-ask** — write a question file, halt, let Bishop iMessage Dave for confirmation. Don't silently expand scope. (Lesson from the cost-tracking patch: the spec missed that `classify.py` also needed editing; the worker silently added it. Better path: stop, surface the finding, get a one-line "yes proceed" from Dave, then continue.)
@@ -110,9 +121,11 @@ Updated `SKILL.md` "Files and tuning points" section adds:
 Before writing any code, the worker reads:
 1. `scripts/classify.py:classify_transaction` (currently lines ~190-285) to confirm the existing two-branch structure (payee-lookup, LLM-call) and the dict shape returned in each case.
 2. `scripts/propose.py` Hop 5 (currently `load_lookup` around line ~268) and Hop 6 per-txn loop (around line ~282) to confirm where the new event/parameter wiring goes.
-3. `scripts/merchant_lookup.py` to confirm the module pattern being mirrored.
+3. `scripts/merchant_lookup.py` to confirm the module pattern `amount_lookup.py` mirrors.
+4. `scripts/apply-additions.py` to confirm the entry-point script pattern `apply-amount-rule.py` mirrors (auth → parse message → validate → mutate state → deliver confirmation iMessage). Reuse helpers (`deliver.send_imessage`, the YNAB GET wrapper for category fetch).
+5. The existing `SETUP.md` to understand the routing-section format that the new Amount-Rule section will mirror.
 
-The worker then writes a one-paragraph "Trace summary" at the top of `PATCH-SUMMARY.md` documenting what it understood about the call shapes, BEFORE applying edits. If the trace surfaces ambiguity (e.g., classify_transaction's signature is unexpected, the merchant_lookup pattern isn't what the spec assumed, the existing return dicts don't match the documented shape), STOP-and-ask. Don't pattern-match-and-go.
+The worker then writes a one-paragraph "Trace summary" at the top of `PATCH-SUMMARY.md` documenting what it understood about the call shapes, BEFORE applying edits. Specifically: (a) confirm `classify_transaction`'s current return dict keys; (b) confirm `apply-additions.py`'s argv shape and confirmation-iMessage flow; (c) confirm the existing SETUP.md section header style. If any of these don't match the documented assumptions, STOP-and-ask. Don't pattern-match-and-go.
 
 ### Patch invariants
 
@@ -121,15 +134,24 @@ The worker then writes a one-paragraph "Trace summary" at the top of `PATCH-SUMM
 - **Live-state preservation: YES.** Whatever mode the cron is currently in (preview or live), leave it alone.
 - **Cost-tracking preservation: YES.** The prior patch wired cost accumulation through `classify.py` and `propose.py`. The new amount-rule branch returns `cost_usd: 0.0` (no LLM call → no cost), but the prior accumulator must still work for LLM-classified transactions in the same run.
 
-### Re-fire requirement (Bishop's job, not worker's)
+### Bishop post-announce — extra step for this patch
 
-Bishop runs ONE preview fire post-announce per patch-mode protocol: `python3 ~/.openclaw/workspace/skills/ynab-categorize/scripts/propose.py --no-apply`. Verify:
-- `load_amount_lookup` event present
-- `cost_total > 0`
-- No `classify_amount_hit` events (rules list is empty for v1 ship)
-- Run completes successfully end-to-end
+This patch introduces NEW Bishop-side routing (the "Amount-Rule Entry" section). Standard patch-mode protocol says "AGENTS.md routing is preserved" — that holds for ROUTING THAT ALREADY EXISTS, but new routing introduced by a patch needs to be applied.
 
-Bishop relays to Dave: "Amount-lookup feature shipped. Rules file is empty (you seed it). Cron is unchanged. Reply with the recurring amounts you want to seed (or edit `state/amount-lookup.json` directly)."
+Bishop's post-announce sequence for this patch:
+
+1. Verify `PATCH-SUMMARY.md` exists and indicates SUCCESS (standard).
+2. Verify state files intact (standard — merchant-lookup.json byte-identical, all pending-*.json untouched).
+3. **Check for `AGENTS-ADDENDUM.md`** at `~/.openclaw/workspace/skills/ynab-categorize/AGENTS-ADDENDUM.md`. If present:
+   - Grep your own AGENTS.md for the addendum's section header (e.g., `## Amount-Rule Entry`).
+   - If NOT already present, append the addendum's content to your AGENTS.md, preserving spacing.
+   - If already present, no-op (idempotent).
+   - Delete the addendum file (`rm`) after applying so it's not re-applied on subsequent patches.
+4. Trigger ONE preview fire (standard): `python3 propose.py --no-apply`.
+5. Verify `load_amount_lookup` event in log, `cost_total > 0`, no errors. The rules list is empty for v1 ship, so no `classify_amount_hit` events expected.
+6. Relay to Dave: "Amount-lookup feature shipped. Rules file is empty — seed by replying 'remember $-2500.00 = Spousal Support' (or edit `state/amount-lookup.json` directly). Cron unchanged. Reply 'go' to enable live writes if you haven't already."
+
+This `AGENTS-ADDENDUM.md` pattern becomes the convention for any future patch that needs to add Bishop-side routing without re-running install.sh.
 
 ### What Bishop pre-stages (before spawning)
 
@@ -162,6 +184,8 @@ Bishop relays to Dave: "Amount-lookup feature shipped. Rules file is empty (you 
 
 - The classic use case is the Spousal Support check: $-2500.00 every month. Bank's payee field shifts ("Wells Fargo Online Transfer", "ACH Withdrawal", etc.), so payee-lookup misses. Amount alone is a reliable signal.
 - Other amounts Dave will likely seed: rent or mortgage if recurring at fixed amount, gym membership, any fixed-price subscription whose payee text isn't stable.
-- v1 ships empty so the patch can land without forcing rule decisions. Dave seeds the file in conversation after the patch validates.
-- This patch is also a methodology test: it touches more files (7) than the cost-tracking patch (3). Tests whether the dataflow-trace requirement and the explicit Files-affected list catch the kind of scope-creep that bit the prior patch.
+- v1 ships rules file empty so the patch can land without forcing rule decisions. Dave seeds via iMessage syntax in conversation after the patch validates.
+- This patch is a methodology test on multiple axes: it touches more files (10) than the cost-tracking patch (3); it adds new Bishop-side routing (testing the `AGENTS-ADDENDUM.md` convention); it tests the dataflow-trace requirement and the explicit Files-affected list (lessons from the prior patch's scope-creep).
 - Ordering note: amount-lookup runs AFTER payee-lookup. So if the merchant-lookup contains a generic entry like "Wells Fargo" → "Banking Fees", and the spousal-support check shows up under "Wells Fargo," it'll be auto-categorized as "Banking Fees" — wrong. Dave should keep merchant-lookup tight (no over-broad payee keys) so amount-lookup can correctly catch the fallback cases. v2 with `amount_lookup_overrides_payee: true` would fix this if it becomes a problem.
+- Conflict policy on the iMessage path is conservative: existing-amount + different-category → REJECT with explanation, don't auto-overwrite. Reasoning: amount rules are high-trust (bypass LLM judgment entirely); silent overwrite by a fat-finger iMessage could miscategorize a recurring transaction for months before Dave noticed. The reject-and-explain path keeps Dave in control. v2 may add explicit "replace $X.XX with <new>" syntax.
+- The category text in the iMessage MUST exactly match a YNAB category name. The script fetches the current YNAB category list via the same auth pattern propose.py uses (`op-ynab-key.sh` + GET `/budgets/{id}/categories`) — no cached category list, no fuzzy matching. If Dave types "Spousal Support" but YNAB has it as "💰 Spousal Support" (with emoji), the script rejects and tells him the closest matches.
