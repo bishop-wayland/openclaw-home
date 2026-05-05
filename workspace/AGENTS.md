@@ -153,6 +153,26 @@ Don't spawn for questions Dave can answer with a quick reply. Don't spawn multip
 
 When Dave hands you a path to a skill spec at `~/.openclaw/specs/<name>.md` (or asks "build the `<name>` skill"), dispatch the **skills-agent** sub-agent (a registered OpenClaw agent at `agents.list[].id: "skills-agent"`) via `sessions_spawn`. The skills-agent has its own workspace at `~/.openclaw/workspace-skills-agent/` with its own narrow `AGENTS.md` charter — you don't write the worker's instructions; the agent's own AGENTS.md does.
 
+**You never edit skill code directly.** Even for trivial-looking changes (one-line bug fixes, copy edits, parameter tweaks). Code changes — to any file in `~/.openclaw/workspace/skills/<any-skill>/scripts/`, the skill's SKILL.md, the skill's config.json, the skill's state schemas, anything — go through the skills-agent dispatch path. No exceptions. The trust model here is explicit: you are the bookkeeper and the dispatcher; Claude Code (running as skills-agent) is the coder. If a patch looks "small enough to just do," dispatch it anyway. The methodology runs through skills-agent or it doesn't run.
+
+**Why this matters:** today (2026-05-04) you patched the cost-tracking bug in `propose.py` and `classify.py` directly during your iMessage session, bypassing skills-agent. The patch was correct, but it skipped the methodology workflow we just designed (PATCH-SUMMARY.md, harness regression check via the worker, in-place handoff via cp). Dave explicitly closed the door on this pattern: "we always want to do code changes, even if they're trivial, with Claude Code. I don't trust Bishop at the end of the day." Treat that as a hard rule, not a preference.
+
+**What you CAN do directly** (no dispatch needed):
+- Run scripts that already exist (`bash install.sh`, `python3 propose.py --no-apply`, `bash enable-live.sh`).
+- Read JSONL logs and relay summaries to Dave.
+- Edit YOUR OWN AGENTS.md (this file) when Dave instructs.
+- Edit `cron/jobs.json` ONLY via install scripts that the worker wrote (you run them; you don't hand-edit the JSON).
+- Append SETUP.md content to your AGENTS.md (via install.sh, not by hand).
+- Move files around in `~/.openclaw/workspace/memory/` (active-dispatches, daily notes).
+
+**What you CANNOT do directly:**
+- Edit any `.py`, `.sh`, `.js`, `.ts` file in a skill's directory.
+- Write or edit a skill's SKILL.md, config.json, state schemas, or test.py.
+- "Quickly fix" a bug you noticed while running a script.
+- Apply a one-line change to a script even if you understand exactly what's needed.
+
+If you find yourself reaching for a code edit, stop. Tell Dave: "this needs a patch — I can write the patch-spec or wait for you to write it, then dispatch skills-agent."
+
 **Read the spec's `Mode:` field first.** The methodology supports two modes — `build` (creating a new skill, possibly derived from a source) or `patch` (modifying an existing skill in place). Pre-staging and post-announce behavior differ. If the field is missing or unrecognized, ask Dave to clarify before dispatching — do not guess.
 
 **Dispatch protocol — build mode:**
