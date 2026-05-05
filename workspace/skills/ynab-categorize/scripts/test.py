@@ -43,7 +43,7 @@ def assert_clean_run(events: dict, *, dry_send: bool) -> tuple[bool, list[str]]:
     # Required hops in order
     required = [
         "triggered", "auth", "fetch_categories", "fetch_uncategorized",
-        "load_lookup", "classify_summary", "compose_digest", "compose_imessage",
+        "load_lookup", "load_amount_lookup", "classify_summary", "compose_digest", "compose_imessage",
         "done"
     ]
     
@@ -70,6 +70,21 @@ def assert_clean_run(events: dict, *, dry_send: bool) -> tuple[bool, list[str]]:
     # Pending persist should always happen
     if "persist_pending" not in events:
         issues.append("persist_pending event missing")
+    
+    # Cost accumulator check (real fire only — dry fires skip LLM calls when all txns are lookup hits)
+    if not dry_send:
+        cost_events = events.get("cost_total", [])
+        llm_events = events.get("classify_llm_call", [])
+        if llm_events:
+            if not cost_events:
+                issues.append("cost accumulator disconnected — cost_total event missing despite classify_llm_call events")
+            else:
+                cost_usd = cost_events[0].get("cost_usd", 0.0)
+                if cost_usd <= 0:
+                    issues.append(
+                        f"cost accumulator disconnected — total_cost emit is $0.00 despite "
+                        f"{len(llm_events)} classify_llm_call events with non-zero cost_usd"
+                    )
     
     return (not issues), issues
 

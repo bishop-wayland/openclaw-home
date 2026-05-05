@@ -14,5 +14,7 @@
   "web_search_provider": "duckduckgo",
   "web_search_timeout_seconds": 5,
   "partial_match_min_key_length": 5,
-  "pending_approval_ttl_days": 30
+  "pending_approval_ttl_days": 30,
+  "amount_match_tolerance": 0.0,
+  "amount_lookup_overrides_payee": false
 }

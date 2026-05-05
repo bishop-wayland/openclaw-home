@@ -10,6 +10,7 @@ import urllib.request
 from typing import Any
 
 import merchant_lookup
+import amount_lookup
 
 
 def _clean_payee(payee: str) -> str:
@@ -192,6 +193,8 @@ def classify_transaction(
     category_names: list[str],
     anthropic_key: str,
     config: dict,
+    *,
+    amount_rules: list[dict] | None = None,
 ) -> dict[str, Any]:
     """
     Full classification pipeline for one transaction.
@@ -225,6 +228,25 @@ def classify_transaction(
             "reasoning": f"Found in merchant lookup ({match_type} match)",
         }
     
+    # Step 1.5: Amount-rule check (fallback when payee lookup misses)
+    if amount_rules is not None:
+        amount_dollars = txn.get("amount", 0) / 1000.0  # YNAB milliunits → dollars
+        tolerance = config.get("amount_match_tolerance", 0.0)
+        matched_rule = amount_lookup.match_amount(amount_dollars, amount_rules, tolerance)
+        if matched_rule:
+            return {
+                "kind": "auto_apply",
+                "category": matched_rule["category"],
+                "confidence": 0.99,
+                "cost_usd": 0.0,
+                "evidence": {
+                    "amount_match": True,
+                    "amount": amount_dollars,
+                    "rule_note": matched_rule.get("note", ""),
+                },
+                "reasoning": f"Matched amount rule: ${amount_dollars:.2f} → {matched_rule['category']}",
+            }
+
     # Step 2: Web search + LLM
     cleaned_payee = _clean_payee(payee)
     web_result = web_search(
@@ -253,6 +275,7 @@ def classify_transaction(
             "kind": "manual_review_needed",
             "category": None,
             "confidence": 0,
+            "cost_usd": llm_result.get("cost_usd", 0.0),
             "evidence": {
                 "lookup_hit": False,
                 "web_search_succeeded": web_result.get("succeeded", False),
@@ -265,6 +288,7 @@ def classify_transaction(
         "kind": "pending_approval",
         "category": llm_result["category"],
         "confidence": llm_result["confidence"],
+        "cost_usd": llm_result.get("cost_usd", 0.0),
         "evidence": {
             "lookup_hit": False,
             "web_snippet": snippet,

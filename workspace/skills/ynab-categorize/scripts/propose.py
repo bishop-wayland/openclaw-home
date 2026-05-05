@@ -23,6 +23,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from logger import RunLogger
 import merchant_lookup
+import amount_lookup
 import classify
 import deliver
 
@@ -272,6 +273,19 @@ def main():
         except FileNotFoundError as e:
             logger.emit("error", hop="load_lookup", message=str(e))
             sys.exit(1)
+
+        # Hop 5b: load_amount_lookup (missing file = empty rules, valid steady state)
+        amount_lookup_path = Path(__file__).parent.parent / "state" / "amount-lookup.json"
+        try:
+            amount_rules_data = amount_lookup.load_amount_rules(amount_lookup_path)
+            amount_rules = amount_rules_data.get("rules", [])
+            logger.emit("load_amount_lookup",
+                       path=str(amount_lookup_path),
+                       entry_count=len(amount_rules),
+                       version=amount_rules_data.get("version", 1))
+        except (ValueError, Exception) as e:
+            logger.emit("error", hop="load_amount_lookup", message=str(e))
+            sys.exit(1)
         
         # Hop 6: classify
         auto_apply_list = []
@@ -289,13 +303,22 @@ def main():
                 category_names,
                 anthropic_key,
                 config,
+                amount_rules=amount_rules,
             )
+            total_cost += result.get("cost_usd", 0.0)
             
             # Log per-transaction detail
             if result["kind"] == "auto_apply":
-                logger.emit("classify_lookup_hit",
-                           txn_id=txn_id, payee=payee, category=result["category"],
-                           match_type=result["evidence"].get("match_type"))
+                if result["evidence"].get("amount_match"):
+                    logger.emit("classify_amount_hit",
+                               txn_id=txn_id, payee=payee,
+                               amount=result["evidence"]["amount"],
+                               matched_category=result["category"],
+                               rule_note=result["evidence"].get("rule_note", ""))
+                else:
+                    logger.emit("classify_lookup_hit",
+                               txn_id=txn_id, payee=payee, category=result["category"],
+                               match_type=result["evidence"].get("match_type"))
                 auto_apply_list.append((txn_id, txn, result))
             elif result["kind"] == "pending_approval":
                 logger.emit("classify_llm_call",

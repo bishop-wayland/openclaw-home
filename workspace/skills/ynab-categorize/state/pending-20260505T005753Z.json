@@ -1,0 +1,122 @@
+[
+  {
+    "txn_id": "c4dce7a1-52c1-4389-9ba0-ffe81becb553",
+    "date": "2026-02-04",
+    "payee": "HBO Max",
+    "amount": -25.35,
+    "proposed_category": "\ud83d\udcfa Subscriptions (Netflix, Strava, WSJ, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "bacbdb0f-1143-424e-bb9f-8152af51dca4",
+    "date": "2026-02-06",
+    "payee": "Wibbley's Burgers",
+    "amount": -42.98,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.98
+  },
+  {
+    "txn_id": "bf3230c4-47b2-4c43-9301-cdeb0d3311bd",
+    "date": "2026-02-07",
+    "payee": "Half Price Books",
+    "amount": -16.53,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "919ef314-1de2-4b30-948b-4487c144a0e6",
+    "date": "2026-02-09",
+    "payee": "Bleep",
+    "amount": -45.93,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.3
+  },
+  {
+    "txn_id": "2b32c6bb-c0bd-4607-befa-72bd5065f347",
+    "date": "2026-02-09",
+    "payee": "Raarecords 584xcu",
+    "amount": -25.29,
+    "proposed_category": "\ud83d\udcda Media (books, records, digital movies)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "e87e8728-a745-493c-9345-4a441399267a",
+    "date": "2026-02-10",
+    "payee": "Check Paid #995079",
+    "amount": -4166.67,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.4
+  },
+  {
+    "txn_id": "696615ac-4d41-4e4f-95c6-0d96370fba63",
+    "date": "2026-02-10",
+    "payee": "Check Paid #995080",
+    "amount": -292.58,
+    "proposed_category": "Uncategorized",
+    "confidence": 0.45
+  },
+  {
+    "txn_id": "4c25c931-7c43-44aa-ba3b-ab0e3cdc908f",
+    "date": "2026-02-10",
+    "payee": "ARCO Parmar",
+    "amount": -78.2,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "a085f5b9-3101-4271-bea8-f7fc93de792b",
+    "date": "2026-02-11",
+    "payee": "Washington Vehicle Licensing",
+    "amount": -199.82,
+    "proposed_category": "\ud83d\ude97 Automobile",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "54e8f378-e6bf-4f01-b4dc-5021f4cdd1b1",
+    "date": "2026-02-12",
+    "payee": "Locochon",
+    "amount": -46.17,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "2568109d-d802-45b9-ad45-c1d6718e9fe1",
+    "date": "2026-02-13",
+    "payee": "Zip Market",
+    "amount": -12.4,
+    "proposed_category": "\ud83d\uded2 \ud83e\udd51 Groceries",
+    "confidence": 0.85
+  },
+  {
+    "txn_id": "b29d216e-3f5e-4bc6-8aa3-0bd8fa64a9cf",
+    "date": "2026-02-13",
+    "payee": "META PAYROLL 260213",
+    "amount": 3470.07,
+    "proposed_category": "Inflow: Ready to Assign",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "96e45042-5365-4a84-892b-fb2092fb3ad6",
+    "date": "2026-02-14",
+    "payee": "Airbnb",
+    "amount": 350.0,
+    "proposed_category": "\ud83c\udfe8 Vacation Lodging (Hotels, AirBnB, etc.)",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "42447d6f-8d8a-4298-a7e3-7ec493120578",
+    "date": "2026-02-16",
+    "payee": "Mountain View Diner",
+    "amount": -48.0,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  },
+  {
+    "txn_id": "0bc927fc-df54-4397-b12f-a38bc22f873e",
+    "date": "2026-02-16",
+    "payee": "Pie Dive Bar",
+    "amount": -43.44,
+    "proposed_category": "\ud83c\udf7d\ufe0f Dining Out",
+    "confidence": 0.95
+  }
+]

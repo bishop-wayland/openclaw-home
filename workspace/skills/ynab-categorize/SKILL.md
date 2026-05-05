@@ -60,8 +60,9 @@ Weekly automated transaction categorizer for Dave's YNAB budget. Reduces manual 
 
 ## Files and tuning points
 
-- **config.json** — budget ID, schedule, LLM model, email/iMessage targets, thresholds
+- **config.json** — budget ID, schedule, LLM model, email/iMessage targets, thresholds; also `amount_match_tolerance` (default 0.0 = exact) and `amount_lookup_overrides_payee` (default false)
 - **state/merchant-lookup.json** — the curated truth table (343+ entries); Dave edits manually to override
+- **state/amount-lookup.json** — recurring fixed-amount rules (e.g., "every $-2500.00 outflow → Spousal Support"). Edit the `rules` list directly, or add rules via iMessage syntax: "remember $-2500.00 = Spousal Support". File is reread on each cron fire; no restart needed.
 - **scripts/propose.py** — main pipeline; edit only to change classification logic
 - **scripts/classify.py** — web search + LLM arbitration; where the magic happens
 
