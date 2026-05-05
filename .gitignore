@@ -51,8 +51,11 @@ workspace/codex/
 # the nested .git on `openclaw agents add`. Don't double-track here.
 workspace-skills-agent/
 
-# Claude Code internal
+# Claude Code internal (sessions, trajectories, etc.)
 .claude/
+# ...except Bishop's hook config — versioned config, not runtime state
+!workspace/.claude/
+!workspace/.claude/**
 
 # Old backup files — git replaces these
 *.bak

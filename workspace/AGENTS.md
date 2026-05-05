@@ -173,6 +173,8 @@ When Dave hands you a path to a skill spec at `~/.openclaw/specs/<name>.md` (or 
 
 If you find yourself reaching for a code edit, stop. Tell Dave: "this needs a patch — I can write the patch-spec or wait for you to write it, then dispatch skills-agent."
 
+**Structural enforcement.** This rule is also enforced by a `PreToolUse` hook at `~/.openclaw/workspace/.claude/hooks/skill-edit-guard.py` (registered in `~/.openclaw/workspace/.claude/settings.json`). If you attempt `Edit` / `Write` / `MultiEdit` on a path under `~/.openclaw/workspace/skills/`, the hook denies the call with a message pointing you to the patch-spec workflow. The hook is the safety net for the text rule — when it fires, you'll see a clear deny message in the tool-call response. Don't try to route around it. If you believe it misfired (legitimate path outside skills tree blocked by mistake), surface to Dave; never edit in a way intended to bypass the guard.
+
 **Read the spec's `Mode:` field first.** The methodology supports two modes — `build` (creating a new skill, possibly derived from a source) or `patch` (modifying an existing skill in place). Pre-staging and post-announce behavior differ. If the field is missing or unrecognized, ask Dave to clarify before dispatching — do not guess.
 
 **Dispatch protocol — build mode:**
@@ -301,3 +303,45 @@ Treat the reply as normal conversation. Respond as appropriate.
 - **Safe regardless of live/preview state:** The approval routing only writes to `merchant-lookup.json` (the curated truth table), never to YNAB. It's harmless to approve pending merchants even if the cron is in preview mode (--no-apply).
 - **Don't auto-retry:** If `apply-additions.py` fails (e.g., malformed reply, file not found), surface the error to Dave and ask what he wants. Don't silently re-run.
 - **Approval text is Dave's:** The exact wording of "change X to Y" is Dave's choice. The parser is lenient and handles common phrasings.
+## Amount-Rule Entry
+
+Dave can add fixed-amount categorization rules via iMessage. Use case: recurring fixed-dollar transactions whose payee text varies (spousal-support check, fixed-rate subscription, etc.) — same amount every cycle but the bank's payee text shifts.
+
+### Detect
+
+Dave's iMessage matches if it contains `remember` or `always` followed by a dollar amount and a separator (`=`, `→`, `->`, `means`, or `as`).
+
+Regex: `(?i)\b(?:remember|always)\b\s+\$?(-?\d+(?:\.\d+)?)\s*(?:=|→|->|means|as)\s+(.+?)$`
+
+Examples:
+- "remember $-2500.00 = 💰 Spousal Support"
+- "remember $500 means 🛒 🥑 Groceries"
+- "always $-100.00 → 📺 Subscriptions (Netflix, Strava, WSJ, etc.)"
+
+### On Match
+
+Call:
+```
+python3 ~/.openclaw/workspace/skills/ynab-categorize/scripts/apply-amount-rule.py --message "<Dave's text>"
+```
+
+The script will:
+- Validate the amount is parseable
+- Validate the category exactly matches a YNAB category name (fetches live from YNAB API)
+- Append the rule to `state/amount-lookup.json`
+- Send Dave a confirmation iMessage
+
+### Conflict policy
+
+- Same amount + same category already exists → silent no-op + confirmation iMessage
+- Same amount + DIFFERENT category → REJECT with explanation; instruct Dave to edit `state/amount-lookup.json` directly to replace
+
+### On No-Match
+
+Treat the message as normal conversation. Respond as appropriate.
+
+### Important Notes
+
+- **No run-id needed:** Amount rules are global, not run-scoped.
+- **Category must be exact:** The script fetches YNAB's live category list and rejects fuzzy matches. If Dave uses an emoji-prefixed category, he must include the emoji.
+- **Don't auto-retry:** If the script fails, surface the error to Dave and ask what he wants. Don't silently re-run.
