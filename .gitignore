@@ -73,3 +73,8 @@ openclawbackup.json
 # Temp files in workspace
 workspace/tmp-*
 workspace/state/
+
+
+# macOS metadata
+.DS_Store
+**/.DS_Store

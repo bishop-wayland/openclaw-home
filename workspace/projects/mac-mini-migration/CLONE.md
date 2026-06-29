@@ -2,7 +2,7 @@
 
 For cloning `bishop-wayland/openclaw-home` to the Mac Mini as a **scratch source for cherry-picking**. The clone does *not* become `~/.openclaw/` — that's created fresh by `openclaw onboard` in a separate step.
 
-See [`CONTEXT.md`](CONTEXT.md) for the full migration plan; this card is just the clone phase.
+See [`CLAUDE.md`](CLAUDE.md) for the full migration plan; this card is just the clone phase.
 
 ---
 
@@ -50,7 +50,7 @@ git log -1 --oneline
 ls workspace/projects/mac-mini-migration/
 ```
 
-The latest commit should be the workspace/HIERARCHY.md + mac-mini-migration project commit (or newer). The migration project dir should contain at least `CONTEXT.md` and this file.
+The latest commit should be the workspace/HIERARCHY.md + mac-mini-migration project commit (or newer). The migration project dir should contain at least `CLAUDE.md` and this file.
 
 ---
 
@@ -64,17 +64,17 @@ cd /tmp/openclaw-source && claude
 
 First prompt to Mini-Claude-Code:
 
-> Load project mac-mini-migration. I'm Dave. We're cherry-picking files from this clone into a fresh openclaw install on this Mini per the Option B plan in CONTEXT.md.
+> Load project mac-mini-migration. I'm Dave. We're cherry-picking files from this clone into a fresh openclaw install on this Mini per the Option B plan in CLAUDE.md.
 
-Mini-Claude-Code reads `workspace/projects/mac-mini-migration/CONTEXT.md`, then drives the install phases with you.
+Mini-Claude-Code reads `workspace/projects/mac-mini-migration/CLAUDE.md`, then drives the install phases with you.
 
 ---
 
 ## Why not clone over `~/.openclaw/`?
 
-- `openclaw onboard` (run before this clone, per CONTEXT.md Phase B) creates a clean state dir + seeds bootstrap files in `~/.openclaw/workspace/`.
+- `openclaw onboard` (run before this clone, per CLAUDE.md Phase B) creates a clean state dir + seeds bootstrap files in `~/.openclaw/workspace/`.
 - Cloning over that overwrites the fresh state with old VM debris — defeats the whole Option B strategy.
-- Cherry-pick into `~/.openclaw/` selectively from `/tmp/openclaw-source/` per CONTEXT.md's cherry-pick list.
+- Cherry-pick into `~/.openclaw/` selectively from `/tmp/openclaw-source/` per CLAUDE.md's cherry-pick list.
 
 ---
 

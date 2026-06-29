@@ -72,7 +72,7 @@ Don't put Bishop content at the state-dir level. Don't put openclaw runtime data
 │       └── logs/       # runtime — gitignore
 ├── projects/           # human+agent collaboration
 │   ├── <project-name>/
-│   │   └── CONTEXT.md  # entry point — "load project <name>" reads this
+│   │   └── CLAUDE.md   # entry point — "load project <name>" reads this; Claude Code auto-loads on cwd
 │   └── archive/        # completed / abandoned
 ├── specs/              # skill specs (input to skills-agent dispatch)
 │   └── <skill-name>.md # versioned via git, not filename
@@ -96,8 +96,8 @@ Don't put Bishop content at the state-dir level. Don't put openclaw runtime data
 ### Projects
 
 - One dir per project under `workspace/projects/<project-name>/`.
-- **Entry point convention:** `CONTEXT.md` is the first file to read. When Dave says "load project X", the assistant reads `workspace/projects/X/CONTEXT.md`.
-- Additional project files (plans, references, working docs) live alongside `CONTEXT.md`.
+- **Entry point convention:** `CLAUDE.md` is the project root doc. When Dave says "load project X", the assistant reads `workspace/projects/X/CLAUDE.md`. Claude Code also auto-walks-up from cwd to load CLAUDE.md, so launching `claude` from inside a project dir loads it implicitly.
+- Additional project files (plans, references, working docs) live alongside `CLAUDE.md`.
 - Completed or abandoned projects move to `workspace/projects/archive/<name>/`.
 
 ### Specs
@@ -149,7 +149,7 @@ The sub-agent runtime model: openclaw injects only `AGENTS.md` + `TOOLS.md` from
 
 ## Migration & multi-machine
 
-To move openclaw between machines: copy `~/.openclaw/` whole, run `openclaw doctor` on the new host, run `openclaw gateway restart`. Channel state (BlueBubbles pairing, OAuth tokens) survives the copy. See `projects/mac-mini-migration/CONTEXT.md` for our specific cutover, which is *not* a clean copy because we're also transitioning identity (new phone, new gmail, new Apple ID).
+To move openclaw between machines: copy `~/.openclaw/` whole, run `openclaw doctor` on the new host, run `openclaw gateway restart`. Channel state (BlueBubbles pairing, OAuth tokens) survives the copy. See `projects/mac-mini-migration/CLAUDE.md` for our specific cutover, which is *not* a clean copy because we're also transitioning identity (new phone, new gmail, new Apple ID).
 
 ---
 
