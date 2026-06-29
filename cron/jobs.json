@@ -15,7 +15,7 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "Noon medication reminder for Dave.\n\nReply with ONE short, warm sentence (1 line, ~12-20 words) reminding him to take his noon meds. Add a small quip \u2014 HAL/2001 references land well, dry humor, gentle nudges. Vary it day to day.\n\nDo not call any tools. Your reply is delivered verbatim to Dave's iMessage by the cron worker \u2014 no preamble, no explanation, no status line. Just the sentence.",
+        "message": "Noon medication reminder for Dave.\n\nReply with ONE short, warm sentence (1 line, ~12-20 words) reminding him to take his noon meds. Add a small quip — HAL/2001 references land well, dry humor, gentle nudges. Vary it day to day.\n\nDo not call any tools. Your reply is delivered verbatim to Dave's iMessage by the cron worker — no preamble, no explanation, no status line. Just the sentence.",
         "model": "anthropic/claude-haiku-4-5",
         "timeoutSeconds": 60,
         "lightContext": true
@@ -48,7 +48,7 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "Evening wind-down check-in for Dave at 9 PM.\n\nReply with a brief, warm but direct check-in (1-3 short sentences) asking what his plan is for the night. Anchor on the goals: book by 10 PM, lights out by 10:45 PM. No nagging tone \u2014 accountability, not pressure. Vary the phrasing day to day.\n\nDo not call any tools. Your reply is delivered verbatim to Dave's iMessage by the cron worker \u2014 no preamble, no explanation, no status. Just the message itself. Sound like Bishop, not a notification.",
+        "message": "Evening wind-down check-in for Dave at 9 PM.\n\nReply with a brief, warm but direct check-in (1-3 short sentences) asking what his plan is for the night. Anchor on the goals: book by 10 PM, lights out by 10:45 PM. No nagging tone — accountability, not pressure. Vary the phrasing day to day.\n\nDo not call any tools. Your reply is delivered verbatim to Dave's iMessage by the cron worker — no preamble, no explanation, no status. Just the message itself. Sound like Bishop, not a notification.",
         "model": "anthropic/claude-haiku-4-5",
         "timeoutSeconds": 60,
         "lightContext": true
@@ -81,7 +81,7 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "3pm medication reminder for Dave.\n\nReply with ONE short, warm sentence (1 line, ~12-20 words) reminding him to take his 3pm meds. Add a small quip \u2014 HAL/2001 references land well, dry humor, gentle nudges. Vary it day to day.\n\nDo not call any tools. Your reply is delivered verbatim to Dave's iMessage by the cron worker \u2014 no preamble, no explanation, no status line. Just the sentence.",
+        "message": "3pm medication reminder for Dave.\n\nReply with ONE short, warm sentence (1 line, ~12-20 words) reminding him to take his 3pm meds. Add a small quip — HAL/2001 references land well, dry humor, gentle nudges. Vary it day to day.\n\nDo not call any tools. Your reply is delivered verbatim to Dave's iMessage by the cron worker — no preamble, no explanation, no status line. Just the sentence.",
         "model": "anthropic/claude-haiku-4-5",
         "timeoutSeconds": 60,
         "lightContext": true
@@ -114,7 +114,7 @@
       "wakeMode": "now",
       "payload": {
         "kind": "agentTurn",
-        "message": "Search for a used red Honda Fit EX-L with under 60k miles for sale. Search these 4 sites using web_search tool: Carvana, Carfax, Carmax, and CarGurus. Use queries like \"red Honda Fit EX-L under 60000 miles site:carvana.com\", repeat for each site.\n\nCache file: /Users/bishop/.openclaw/workspace/memory/car-search-seen.txt\nThis file contains URLs of listings already seen (one per line). Create it if missing.\n\nSteps:\n1. Run web_search for each of the 4 sites\n2. Collect all result URLs from the search results\n3. Read the cache file (if exists)\n4. Find any URLs not already in the cache\n5. If new URLs found: call sessions_send with sessionKey=\"main\" and message listing each new result (title, URL). Note in message if the trim level looks uncertain (e.g. might be EX not EX-L) so Dave can check.\n6. Append all new URLs to the cache file\n7. If no new URLs: do nothing, exit silently.\n\nKeep sessions_send message short. Format: \"\ud83d\ude97 New Honda Fit listing(s):\\n- [title] \u2014 [url]\\n...\" One entry per listing.",
+        "message": "Search for a used red Honda Fit EX-L with under 60k miles for sale. Search these 4 sites using web_search tool: Carvana, Carfax, Carmax, and CarGurus. Use queries like \"red Honda Fit EX-L under 60000 miles site:carvana.com\", repeat for each site.\n\nCache file: /Users/bishop/.openclaw/workspace/memory/car-search-seen.txt\nThis file contains URLs of listings already seen (one per line). Create it if missing.\n\nSteps:\n1. Run web_search for each of the 4 sites\n2. Collect all result URLs from the search results\n3. Read the cache file (if exists)\n4. Find any URLs not already in the cache\n5. If new URLs found: call sessions_send with sessionKey=\"main\" and message listing each new result (title, URL). Note in message if the trim level looks uncertain (e.g. might be EX not EX-L) so Dave can check.\n6. Append all new URLs to the cache file\n7. If no new URLs: do nothing, exit silently.\n\nKeep sessions_send message short. Format: \"🚗 New Honda Fit listing(s):\\n- [title] — [url]\\n...\" One entry per listing.",
         "model": "anthropic/claude-haiku-4-5",
         "timeoutSeconds": 60,
         "lightContext": true
@@ -181,7 +181,8 @@
         "channel": "bluebubbles",
         "to": "+16508239528",
         "cooldownMs": 3600000
-      }
+      },
+      "state": {}
     }
   ]
 }
