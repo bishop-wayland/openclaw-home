@@ -1,6 +1,6 @@
 ---
 name: paddle-board-alert
-description: Daily 5 AM check of the morning wind forecast at Waverly Park, Kirkland. If wind stays at or below the configured threshold (default 8 mph) across the 6-9 AM window, Dave gets an iMessage. On bad-wind days, silence — absence of the message IS the no-go signal. Suppress-on-bad is intentional; do not "fix" it to always-fire without asking Dave first. Composes conceptually with alert-circuit (same chatGuid + tone) but mechanically uses the openclaw-cron + exec-tool + BB-direct flavor (announce path is suppressed by the exec tool call). Use when Dave says "check the paddle forecast", "is it a paddle morning?", "what's the wind look like?", or asks anything about tuning the threshold/window/location.
+description: Daily 5 AM check of the morning wind forecast at Waverly Park, Kirkland. If wind stays at or below the configured threshold (default 8 mph) across the 6-9 AM window, Dave gets an iMessage. On bad-wind days, silence — absence of the message IS the no-go signal. Suppress-on-bad is intentional; do not "fix" it to always-fire without asking Dave first. Composes conceptually with alert-circuit (same tone) but mechanically uses the openclaw-cron + exec-tool + imsg-CLI flavor (announce path is suppressed by the exec tool call). Use when Dave says "check the paddle forecast", "is it a paddle morning?", "what's the wind look like?", or asks anything about tuning the threshold/window/location.
 ---
 
 # Paddle-Board Alert
@@ -20,15 +20,15 @@ The Python pipeline:
 1. **load_config** — reads `config.json` (location, threshold, window).
 2. **fetch_forecast** — Open-Meteo `/v1/forecast` (free, no auth) → 24 hours of `wind_speed_10m` for today, in mph, local PT time.
 3. **evaluate_window** — pulls hours [`window_start`, `window_end`) from the forecast, finds max wind. Decision = `go` if max ≤ threshold else `no-go`.
-4. **deliver_or_suppress** — on `go` + `--real-send`: POSTs an iMessage directly to BlueBubbles (`/api/v1/message/text`, chatGuid `iMessage;-;otte.dave@gmail.com`). On `no-go`: silence (logs `suppressed`).
+4. **deliver_or_suppress** — on `go` + `--real-send`: sends via `imsg send --to "+16508239528" --text "<message>"` CLI subprocess. On `no-go`: silence (logs `suppressed`).
 
 Stateless. No dedup. Each day's check is independent.
 
 ## Why this skill diverges from alert-circuit's announce flavor
 
-The alert-circuit invariant *"no tool calls in the cron-style agent path"* applies to the announce/deliver flow specifically. This skill needs `tools: ["exec"]` to run the Python forecast pipeline — which by design suppresses the announce path. Skills that use `--tools exec` MUST handle delivery from inside the script; that's exactly the pattern job-search uses with launchd, and what `scripts/deliver.py` here implements (BB-direct POST). It's the same end-to-end shape, adapted to the openclaw cron entrypoint rather than launchd.
+The alert-circuit invariant *"no tool calls in the cron-style agent path"* applies to the announce/deliver flow specifically. This skill needs `tools: ["exec"]` to run the Python forecast pipeline — which by design suppresses the announce path. Skills that use `--tools exec` MUST handle delivery from inside the script; that's exactly the pattern job-search uses with launchd, and what `scripts/deliver.py` here implements (imsg-CLI send). It's the same end-to-end shape, adapted to the openclaw cron entrypoint rather than launchd.
 
-The chatGuid (`iMessage;-;otte.dave@gmail.com`, email-keyed, never phone-keyed) and the message-tone conventions ARE the alert-circuit reuse.
+The message-tone conventions are the alert-circuit reuse. Phone-keyed sends (`+16508239528`) are now the correct form for this skill — the old email-keyed chatGuid invariant was BlueBubbles-era and no longer applies to imsg.
 
 ## When Dave invokes Bishop
 
@@ -47,7 +47,7 @@ The chatGuid (`iMessage;-;otte.dave@gmail.com`, email-keyed, never phone-keyed) 
 | `SKILL.md` | this file |
 | `config.json` | tunable knobs (location, threshold, window, message template) |
 | `scripts/check.py` | main pipeline orchestrator (4 hops) |
-| `scripts/deliver.py` | BB-direct iMessage send (reads creds from `~/.openclaw/openclaw.json`) |
+| `scripts/deliver.py` | imsg CLI iMessage send (`imsg send --to +16508239528 --text ...`) |
 | `scripts/logger.py` | per-hop JSONL logger (line-buffered) |
 | `scripts/test.py` | three-fires verification harness |
 | `scripts/install-cron.sh` | adds the openclaw cron entry to `~/.openclaw/cron/jobs.json` |
@@ -56,14 +56,14 @@ The chatGuid (`iMessage;-;otte.dave@gmail.com`, email-keyed, never phone-keyed) 
 
 ## Composes with
 
-- **alert-circuit** (conceptually) — chatGuid convention, message tone, three-fires-before-stable testing discipline.
-- **job-search** (mechanically) — `logger.py` shape, three-fires harness shape, BB-direct delivery pattern (just adapted from launchd to openclaw cron).
+- **alert-circuit** (conceptually) — message tone, three-fires-before-stable testing discipline.
+- **job-search** (mechanically) — `logger.py` shape, three-fires harness shape, exec-from-cron delivery pattern (adapted from launchd to openclaw cron).
 - **openclaw cron** — the trigger registry. Entry lives in `~/.openclaw/cron/jobs.json`.
-- **BlueBubbles** — iMessage delivery. Server URL + password live in `~/.openclaw/openclaw.json` → `channels.bluebubbles`.
+- **imsg** — OpenClaw native iMessage channel (replaced BlueBubbles 2026-06-30). Sends via `imsg send --to +16508239528 --text ...` CLI subprocess; no server creds required.
 
 ## Cost
 
-- **Per run:** $0.00 (Open-Meteo is free, no API key; BB delivery is free; Haiku turn is the only paid call and it's just "call exec with this exact command" — sub-cent token cost).
+- **Per run:** $0.00 (Open-Meteo is free, no API key; imsg delivery is free; Haiku turn is the only paid call and it's just "call exec with this exact command" — sub-cent token cost).
 - **Monthly (daily cadence × 30):** ~$0.01 in token cost from the trivial Haiku turns. Effectively free.
 
 ## Tuning surface (where Dave will iterate)

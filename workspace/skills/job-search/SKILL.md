@@ -18,7 +18,7 @@ Once a week (Sun 7 AM PT, via launchd), `scripts/search.py` runs the full pipeli
 5. **Merge** — Layer 1 + Layer 2 results combined into one judgment.
 6. **Dedup** — `state/seen.db` (SQLite) tracks `sha256(normalized_title + company + location)`. Drops anything seen before.
 7. **Format** — `format.py` builds tier-grouped HTML email with apply links + relevance blurbs + cost footer.
-8. **Deliver** — `gog gmail send` from `bishopunit937@gmail.com` to `otte.dave@gmail.com`.
+8. **Deliver** — `gog gmail send` from `yutani.w.bishop@gmail.com` to `otte.dave@gmail.com`.
 9. **Per-hop logging** — `logs/run-<iso>.jsonl` records every hop. If something breaks at 7 AM Sunday, `tail logs/run-*.jsonl | jq` shows which hop failed in 30 seconds.
 
 Layer 2 is enrichment — if it fails (HTTP error, parse error), the run continues with Layer 1 only and notes the failure in `skipped_companies`. Use `--skip-layer2` for a cheaper Phase-1-only run.
@@ -55,7 +55,7 @@ Layer 2 is enrichment — if it fails (HTTP error, parse error), the run continu
 
 ## Composes with
 
-- **gog** (bundled openclaw skill) — outbound email via `gog gmail send`. Auth lives at the Bishop level (`bishopunit937@gmail.com`, gmail scope confirmed).
+- **gog** (bundled openclaw skill) — outbound email via `gog gmail send`. Auth lives at the Bishop level (`yutani.w.bishop@gmail.com`, gmail scope confirmed).
 - **1password** (bundled) — Anthropic API key fetched via `~/.openclaw/scripts/op-anthropic-key.sh`.
 - **launchd** — system scheduler. Not openclaw cron (this skill's runtime makes web/API calls; launchd is simpler to debug than openclaw's cron path here).
 

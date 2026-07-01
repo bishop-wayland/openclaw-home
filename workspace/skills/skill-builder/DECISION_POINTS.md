@@ -73,9 +73,9 @@ For each category: when it applies, why the pattern, default if param, what trig
 ### Recipient / sender identity
 - **Pattern:** `param` (with safe defaults)
 - **When it applies:** Any delivery.
-- **Default if param:** sender = Bishop's identity (`bishopunit937@gmail.com` for email; Bishop's iMessage chat for iMessage). Recipient = `otte.dave@gmail.com` for email; Dave's iMessage thread for iMessage.
+- **Default if param:** sender = Bishop's identity (`yutani.w.bishop@gmail.com` for email; Bishop's iMessage chat for iMessage). Recipient = `otte.dave@gmail.com` for email; Dave's iMessage thread for iMessage.
 - **Stop-and-ask trigger:** spec wants a non-Bishop sender, or a recipient other than Dave.
-- **Job-search example:** sender `bishopunit937@gmail.com`, recipient `otte.dave@gmail.com`. Both constants in `deliver.py` — could be parameters but haven't needed to be yet.
+- **Job-search example:** sender `yutani.w.bishop@gmail.com`, recipient `otte.dave@gmail.com`. Both constants in `deliver.py` — could be parameters but haven't needed to be yet.
 
 ### Suppress-on-empty vs always-fire
 - **Pattern:** `architectural`

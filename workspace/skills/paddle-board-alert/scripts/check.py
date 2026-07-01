@@ -133,8 +133,8 @@ def deliver_or_suppress(cfg: dict, eval_result: dict, *, real_send: bool, log: R
     ok, detail = send_imessage(text)
     if not ok:
         log.emit("error", hop="deliver", detail=detail, would_send=text)
-        raise RuntimeError(f"BB delivery failed: {detail}")
-    log.emit("delivered", message=text, bb_response_status=detail.get("status"))
+        raise RuntimeError(f"imsg delivery failed: {detail}")
+    log.emit("delivered", message=text, send_status=detail.get("status"))
 
 
 def main(argv=None) -> int:

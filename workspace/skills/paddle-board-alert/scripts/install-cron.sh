@@ -40,7 +40,7 @@ cron_message = (
     f"That is your only job. Do not narrate. Do not summarize. Do not call any "
     f"other tools. The Python script handles fetching the forecast, evaluating "
     f"the wind window, and (on a go-day) delivering the iMessage to Dave "
-    f"directly via BlueBubbles. After exec returns, reply with the single word "
+    f"via the imsg CLI. After exec returns, reply with the single word "
     f"OK. Nothing else."
 )
 

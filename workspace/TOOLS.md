@@ -6,7 +6,9 @@ This document defines how Bishop interacts with each integrated system. Each sec
 
 ---
 
-## iMessage via BlueBubbles
+## iMessage (native, via `imsg`)
+
+**BlueBubbles is deprecated as of the Mac Mini migration (2026-06-30).** iMessage now runs through openclaw's native `channels.imessage` provider, backed by the `imsg` CLI (`brew install steipete/tap/imsg`) — not BlueBubbles Server. If you (Bishop) are ever asked about pairing status, BlueBubbles, or iMessage configuration, do not guess or fabricate an answer — pairing state is checked with `openclaw pairing list imessage` and approved with `openclaw pairing approve imessage <code>`, run from the Mini's shell, not from inside this chat. If you don't have a tool that can actually run that check, say so plainly instead of inventing a plausible-sounding status.
 
 ### Purpose
 Primary communication channel between Bishop and David. All inbound task requests arrive here. All outbound status updates, reports, and questions go here.

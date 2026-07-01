@@ -63,7 +63,7 @@ Cron alerts use `delivery.bestEffort: true` because BB's `apple-script` send met
 ## Open follow-ups (post-migration)
 
 1. After 2-3 days stable on the Mini: revoke old credentials — old GCP Pub/Sub subscription, old `gog` tokens, old BB pairing on Dave's Apple ID.
-2. Decide what to do with `bishopunit937@gmail.com` — abandon, or keep as backup inbox? Affects AGENTS.md Rule 3a trusted-senders list.
+2. Decide what to do with the old `bishopunit937@gmail.com` — abandon, or keep as backup inbox? Affects AGENTS.md Rule 3a trusted-senders list.
 3. After `bestEffort` removal: confirm cron behavior is stable for a week before declaring the workaround dead.
 
 ---

@@ -51,7 +51,7 @@ Dave configures this in Gmail web UI under Settings → Filters and Blocked Addr
 ```
 From: info@refurb-tracker.com
 → Apply label: bishop-alert-refurb
-→ (optional) Forward to: bishopunit937@gmail.com  [needed if filtering Dave's personal inbox]
+→ (optional) Forward to: yutani.w.bishop@gmail.com  [needed if filtering Dave's personal inbox]
 ```
 
 This stage does the matching. By the time the email reaches OpenClaw, it's already classified.

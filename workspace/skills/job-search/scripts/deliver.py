@@ -10,7 +10,7 @@ import json
 import os
 import subprocess
 
-GOG_ACCOUNT = "bishopunit937@gmail.com"
+GOG_ACCOUNT = "yutani.w.bishop@gmail.com"
 DEFAULT_TO = "otte.dave@gmail.com"
 KEYRING_PW_SCRIPT = "/Users/bishop/.openclaw/scripts/op-gog-keyring-password.sh"
 

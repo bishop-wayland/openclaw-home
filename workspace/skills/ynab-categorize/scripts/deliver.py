@@ -15,7 +15,7 @@ from pathlib import Path
 # Email delivery via gog (Gmail OAuth)
 # ─────────────────────────────────────────────────────────────
 
-GOG_ACCOUNT = "bishopunit937@gmail.com"
+GOG_ACCOUNT = "yutani.w.bishop@gmail.com"
 KEYRING_PW_SCRIPT = "/Users/bishop/.openclaw/scripts/op-gog-keyring-password.sh"
 
 

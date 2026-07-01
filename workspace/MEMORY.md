@@ -14,12 +14,12 @@
 
 **Email:**
 - Never send email as otte.dave@gmail.com unless explicitly told to
-- Always send outbound email as bishopunit937@gmail.com
+- Always send outbound email as yutani.w.bishop@gmail.com
 - Only read otte.dave@gmail.com inbox (triage + notify)
 
 **Google Drive / Docs:**
 - otte.dave@gmail.com: read only — never create, modify, or delete
-- bishopunit937@gmail.com: can create docs here when asked
+- yutani.w.bishop@gmail.com: can create docs here when asked
 
 **Google Calendar:**
 - otte.dave@gmail.com: can read, create, modify, delete events — but ALWAYS confirm first
@@ -27,7 +27,7 @@
 
 **iMessage / Contacts:**
 - Use otte.dave@gmail.com contacts for lookups
-- Send iMessages as bishopunit937@gmail.com (Bishop's Apple ID)
+- Send iMessages as yutani.w.bishop@gmail.com (Bishop's Apple ID)
 
 ## Standing Rules
 
@@ -105,7 +105,7 @@ Active to-do list for expanding Bishop's capabilities. Track progress here.
 - [x] iMessage via BlueBubbles
 - [x] Telegram notifications
 - [x] Security rules + prompt injection defense
-- [x] Gmail quarantine filter (bishopunit937@gmail.com)
+- [x] Gmail quarantine filter (yutani.w.bishop@gmail.com)
 - [x] Compaction + memory flush + session memory enabled
 - [x] Cron jobs: noon meds, 3pm meds, 9pm wind-down
 

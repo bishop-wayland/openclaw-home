@@ -41,6 +41,8 @@ identity/
 
 # Workspace runtime state
 workspace/.openclaw/
+workspace/openclaw-workspace-state.json
+workspace/.clawhub/
 
 # ACP agent sub-workspaces (managed by their own sessions)
 workspace/claude/

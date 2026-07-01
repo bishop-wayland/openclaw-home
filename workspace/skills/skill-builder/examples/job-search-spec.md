@@ -43,7 +43,7 @@ Weekly automated job-posting digest emailed to Dave at otte.dave@gmail.com. Pull
 | 8 | `validate` | combined judgment | errors[] | check against schema.json; halt if invalid |
 | 9 | `dedup` | combined results | new only + already-seen split | SQLite at `state/seen.db` |
 | 10 | `format` | new results + run meta | (subject, html_body) | tier-grouped HTML, footer with run cost + L2 stats |
-| 11 | `deliver` | (subject, html) | gmail send confirmation | `gog gmail send` via `bishopunit937@gmail.com` → `otte.dave@gmail.com`; skipped on `--dry-send` |
+| 11 | `deliver` | (subject, html) | gmail send confirmation | `gog gmail send` via `yutani.w.bishop@gmail.com` → `otte.dave@gmail.com`; skipped on `--dry-send` |
 | 12 | `mark_seen` | new results | inserted count | SQLite insert; skipped on `--dry-send` |
 
 ## 5. Architectural commitments (LOCKED)
@@ -78,7 +78,7 @@ Weekly automated job-posting digest emailed to Dave at otte.dave@gmail.com. Pull
 | Tier definitions | T1 Games / T2 Big Tech / T3 AI labs+robotics / T4 mid-size | `companies.md` (human-readable) + `companies.json[].tier` | Dave's mental model |
 | Criteria (judgment rules) | plain English, ~80 lines | `criteria.md` | iteratively tuned; soft on graphics/3D/animation, hard on firmware/contract/relocation |
 | Recipient email | otte.dave@gmail.com | `deliver.py` constant | Dave's primary inbox |
-| Sender identity | bishopunit937@gmail.com | `deliver.py` constant | Bishop's gmail account |
+| Sender identity | yutani.w.bishop@gmail.com | `deliver.py` constant | Bishop's gmail account |
 
 ## 7. Tuning surface
 
@@ -100,7 +100,7 @@ Where Dave will iterate post-build, in expected frequency order:
 - Claude returns valid JSON parseable by `_extract_json`
 
 **Real fire must pass when:**
-- Email arrives at `otte.dave@gmail.com` from `bishopunit937@gmail.com`
+- Email arrives at `otte.dave@gmail.com` from `yutani.w.bishop@gmail.com`
 - Subject is `Job digest — <day> <date> — N new postings`
 - Body is HTML, tier-grouped, with apply links + relevance blurbs
 - `state/seen.db` has rows for the delivered postings

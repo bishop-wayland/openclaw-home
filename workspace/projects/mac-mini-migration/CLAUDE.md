@@ -6,6 +6,24 @@ Supersedes the older `handoff/BISHOP-MIGRATION-CONTEXT.md` and `handoff/BOOTSTRA
 
 ---
 
+## Status (updated 2026-06-30)
+
+**Phases A-E done. Phase F (skills-agent) also done, ahead of plan.** Phase E's Gmail webhook is fully working end-to-end (Gmail → Pub/Sub → Tailscale Funnel → openclaw hook → triage agent → `memory/inbox-queue.md`), confirmed with live test emails. Cron model-allowlist issue Dave fixed himself. Phase F got pulled forward because Dave hit a real need for it (dispatching a paddle-board-alert repair) before we reached it in plan order — `skills-agent` is now registered with `tools.fs.workspaceOnly: true` and a proper narrow coder charter, and successfully completed its first real patch dispatch. See `PICKUP-2026-06-30.md` for the full trail (6 bugs found and fixed across the session, plus the skills-agent setup). Remaining loose end: `paddle-board-alert/scripts/install-cron.sh`'s `failureAlert.channel` still says `"bluebubbles"` (non-blocking). `ynab-categorize` needs the same patch treatment — deferred, Dave wants it as its own separate task.
+
+**Plan deviation: BlueBubbles is dropped.** Dave's call (2026-06-30): BlueBubbles is deprecated in favor of native `imsg`. Phase E below is rewritten to match — see that section. Do not install BlueBubbles Server.
+
+**iMessage debugging session 2026-06-30 (bug #1 — fixed, confirmed):** Dave reported Bishop wasn't replying to texts, though inbound messages were visibly landing in Messages.app. Root cause found in `/tmp/openclaw/openclaw-2026-06-30.log`: `channels.imessage.cliPath` was set to the **skill folder** (`/opt/homebrew/lib/node_modules/openclaw/skills/imsg`, which only holds `SKILL.md`) instead of the actual binary, so the provider failed to spawn (`EACCES`) and openclaw never saw inbound messages at all. Fixed via `openclaw config set channels.imessage.cliPath /opt/homebrew/bin/imsg` + gateway restart. **Confirmed working** — Dave received a pairing code, we approved it (`openclaw pairing approve imessage <code>`), Dave's number is now allowlisted and is also set as command owner.
+
+**Bug #2 — fixed, not yet re-confirmed:** Once replies started flowing, Dave asked "Are we paired?" and got back a fabricated answer referencing BlueBubbles and claiming "iMessage isn't currently configured" — both wrong. Root cause: `workspace/TOOLS.md` still had a stale "iMessage via BlueBubbles" section bootstrapped directly into the main agent's context every session. Fixed: rewrote that section for native `imsg`, added an explicit instruction not to fabricate pairing/config status when it can't actually check. **Ask Dave to send one more test text to confirm the agent no longer mentions BlueBubbles.**
+
+**Investigated and concluded non-blocking:** "Agent main routed from channel imessage but message tool unavailable" doctor warning. Tried explicit `tools.allow: ["group:messaging", "message"]` (beyond just the group) + restart — warning persists. Checked `tools.byProvider` and `tools.toolsBySender` for hidden overrides — none configured; config is correct per openclaw docs. Functionally, two replies were delivered to Dave during this session, so the reply path works regardless. Concluded this is most likely an openclaw `doctor` false-positive in its channel/tool-policy mismatch detection (matches an open upstream issue), not an actual misconfig. Don't keep chasing it unless attachments/reactions/thread-replies actually misbehave — that's the documented blast radius of this specific warning.
+- `groupPolicy="allowlist"` with `channels.imessage.groups` empty — all group messages get dropped silently. Not a concern for Dave's 1:1 DM thread, but worth knowing if group chat use comes up.
+- `gateway.auth.token` stored as plaintext secret — flagged by `openclaw security audit`. Not yet migrated to SecretRef.
+- 2 cron jobs (`paddle-board-alert`, `ynab-categorize`) flagged by doctor needing manual shell/process-tool conversion for isolated-agent compatibility.
+- `anthropic:claude-cli` model auth was showing "expiring (4h)" as of 2026-06-30 ~13:50 PT — re-auth via `openclaw models auth login --provider anthropic` if Bishop starts failing model calls.
+
+---
+
 ## Strategy
 
 **Why not the documented "copy whole `~/.openclaw/` + run doctor" path:** that path preserves continuity. We don't want continuity — we want a clean identity transition and the chance to drop accumulated debris (stale duplicates, misplaced scripts, undocumented dirs). Cherry-picking forces every file to justify its trip.
@@ -123,12 +141,18 @@ Replaces the old `BOOTSTRAP.md` 9-step card.
 2. Re-add hooks/cron/channel config to fresh `openclaw.json` via `openclaw configure` or direct edit.
 3. Update `openclaw.json` hooks.gmail block: new account, new GCP topic/subscription, new pushToken, new tailscale path.
 
-### Phase E — BlueBubbles + Gmail
+### Phase E — Native iMessage (imsg) + Gmail
 
-1. Install BlueBubbles Server app, pair to Mini's new Apple ID iMessage account.
-2. Configure openclaw bluebubbles channel (server URL, password).
-3. Re-grant `gog` OAuth for `yutani.w.bishop@gmail.com`.
-4. Create new GCP Pub/Sub topic + subscription, expose via Tailscale Funnel, update `openclaw.json` hooks.gmail.
+**Superseded 2026-06-30: BlueBubbles dropped, Dave's call.** Use openclaw's native `channels.imessage` provider (the `imsg` CLI, `brew install steipete/tap/imsg`), not BlueBubbles Server.
+
+1. Sign the Mini into Bishop's Apple ID, iMessage on (done in Phase A).
+2. `brew install steipete/tap/imsg`; confirm with `imsg --version`.
+3. Grant Full Disk Access (Messages DB read) + Automation permission for Messages.app to the process running the openclaw gateway.
+4. Configure `channels.imessage` in `openclaw.json`: `enabled: true`, `cliPath` **must point at the `imsg` binary itself** (`/opt/homebrew/bin/imsg` via `brew`, or wherever `which imsg` resolves) — NOT at the `openclaw/skills/imsg` skill folder, which only contains `SKILL.md` and isn't executable. Pointing `cliPath` at the skill folder spawns `EACCES` and the provider silently never comes up (this bit us 2026-06-30 — see Status section above).
+5. `dmPolicy` defaults to `"pairing"` — unknown senders get a one-time pairing code (`openclaw pairing list imessage` / `openclaw pairing approve imessage <code>`). For known senders use `channels.imessage.allowFrom` (E.164 number or Apple ID email) with `dmPolicy: "allowlist"`.
+6. `groupPolicy: "allowlist"` requires `channels.imessage.groups` entries (or `groups["*"] = { requireMention: true }` to allow all groups) or every group message is silently dropped.
+7. Re-grant `gog` OAuth for `yutani.w.bishop@gmail.com`.
+8. Create new GCP Pub/Sub topic + subscription, expose via Tailscale Funnel, update `openclaw.json` hooks.gmail.
 
 ### Phase F — Register skills-agent
 
