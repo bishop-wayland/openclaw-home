@@ -6,9 +6,15 @@ Supersedes the older `handoff/BISHOP-MIGRATION-CONTEXT.md` and `handoff/BOOTSTRA
 
 ---
 
-## Status (updated 2026-06-30)
+## Status (updated 2026-07-01)
 
-**Phases A-E done. Phase F (skills-agent) also done, ahead of plan.** Phase E's Gmail webhook is fully working end-to-end (Gmail → Pub/Sub → Tailscale Funnel → openclaw hook → triage agent → `memory/inbox-queue.md`), confirmed with live test emails. Cron model-allowlist issue Dave fixed himself. Phase F got pulled forward because Dave hit a real need for it (dispatching a paddle-board-alert repair) before we reached it in plan order — `skills-agent` is now registered with `tools.fs.workspaceOnly: true` and a proper narrow coder charter, and successfully completed its first real patch dispatch. See `PICKUP-2026-06-30.md` for the full trail (6 bugs found and fixed across the session, plus the skills-agent setup). Remaining loose end: `paddle-board-alert/scripts/install-cron.sh`'s `failureAlert.channel` still says `"bluebubbles"` (non-blocking). `ynab-categorize` needs the same patch treatment — deferred, Dave wants it as its own separate task.
+**Phases A-F done. Phase G effectively done.** Phase E's Gmail webhook fully working end-to-end. Phase F (skills-agent) registered and validated with a real patch dispatch. See `PICKUP-2026-06-30.md` for that session's trail.
+
+**2026-07-01 session:** iOS app pairing fixed (Tailscale Serve + CLI symlink + killing a 14h-orphaned gateway process that was silently eating all our earlier "restarts"). Phase G's `OP_SERVICE_ACCOUNT_TOKEN` gap closed for real — restored the existing `BishopServiceAccount` token (reused from the VM, vault-scoped not device-scoped, no new cost) into `~/.openclaw/.env`, and fixed the three pre-existing broken `op-*.sh` scripts (dead Homebrew Caskroom path from the VM). Gateway PATH confirmed already minimal (`/usr/bin:/bin:/usr/sbin:/sbin`, no fix needed). One Phase G item still open: cron legacy storage normalization (`openclaw doctor --fix`, no dry-run available — deferred to be run interactively rather than blind).
+
+**ElevenLabs TTS: fixed, after two live gateway outages.** Root cause found and confirmed by direct reproduction: the secrets-exec provider runs with a stripped environment (no `HOME`), so `op` failed silently and emitted an empty value instead of erroring. Fixed (`--provider-pass-env HOME` + hardened all four `op-*.sh` scripts to fail loudly instead of silently). Confirmed working end-to-end via `openclaw infer tts convert` — real authenticated ElevenLabs call succeeds. Only remaining item is Dave's own choice: ElevenLabs rejects the example "library" voice on his account's free tier (402 paid-plan-required) — needs either an upgrade or a free-tier-compatible voice. See `PICKUP-2026-07-01.md` for the full trail — worth reading as a case study in what not to do (don't trust `--dry-run --allow-exec` for env-dependent exec-provider bugs; verify with direct `env -i` reproduction instead).
+
+**Phase H** (VM shutdown, credential revocation) intentionally waits for 2-3 days of Mini stability — not attempted yet, by design.
 
 **Plan deviation: BlueBubbles is dropped.** Dave's call (2026-06-30): BlueBubbles is deprecated in favor of native `imsg`. Phase E below is rewritten to match — see that section. Do not install BlueBubbles Server.
 
